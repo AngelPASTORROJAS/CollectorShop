@@ -126,7 +126,9 @@ public static class ApplicationSetup
         builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.PropertyNamingPolicy = null);
 
         builder.Services.AddControllers();
-        builder.Services.AddOpenApi();
+
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
 
         builder.Services.AddSingleton<IConfigurationCache, ConfigurationCache>();
 
@@ -151,6 +153,7 @@ public static class ApplicationSetup
         {
             app.UseHsts();
         }
+
         // 1. Redirection HTTPS en premier
         app.UseHttpsRedirection();
 
@@ -167,7 +170,8 @@ public static class ApplicationSetup
         // 5. OpenAPI (Swagger)
         if (app.Environment.IsDevelopment())
         {
-            app.MapOpenApi();
+            app.UseSwagger();
+            app.UseSwaggerUI();
         }
 
         // 6. Sécurité (Authentification puis Autorisation)

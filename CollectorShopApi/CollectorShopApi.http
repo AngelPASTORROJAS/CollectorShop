@@ -1,11 +1,14 @@
 @CollectorShopApi_HostAddress_http = http://localhost:5000
 @CollectorShopApi_HostAddress_https = https://localhost:5001
 
-GET {{CollectorShopApi_HostAddress_http}}/weatherforecast/
-Accept: application/json
+GET {{CollectorShopApi_HostAddress_http}}/swagger
 ###
 
 GET {{CollectorShopApi_HostAddress_http}}/configuration/
+###
+
+GET {{CollectorShopApi_HostAddress_http}}/weatherforecast/
+Accept: application/json
 ###
 
 GET {{CollectorShopApi_HostAddress_https}}/weatherforecast/
