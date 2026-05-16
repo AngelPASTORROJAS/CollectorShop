@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Primitives;
+using Scalar.AspNetCore;
 using System.IO.Compression;
 
 namespace CollectorShopApi;
@@ -128,7 +129,7 @@ public static class ApplicationSetup
         builder.Services.AddControllers();
 
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddOpenApi();
 
         builder.Services.AddSingleton<IConfigurationCache, ConfigurationCache>();
 
@@ -170,8 +171,8 @@ public static class ApplicationSetup
         // 5. OpenAPI (Swagger)
         if (app.Environment.IsDevelopment())
         {
-            app.UseSwagger();
-            app.UseSwaggerUI();
+            app.MapOpenApi();
+            app.MapScalarApiReference();
         }
 
         // 6. Sécurité (Authentification puis Autorisation)
