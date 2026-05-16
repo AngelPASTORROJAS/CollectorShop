@@ -7,11 +7,13 @@ services:
     environment:
       - ASPNETCORE_URLS=https://+:5001;http://+:5000
     ports:
-          - "5000:5000"
-          - "5001:5001"
+      - "5000:5000"
+      - "5001:5001"
     depends_on:
-          - users.database
-          - collector.database
+      users.database:
+        condition: service_healthy
+      collector.database:
+        condition: service_healthy
 
   users.database:
       image: postgres:17-bookworm
@@ -25,6 +27,11 @@ services:
         - "5432:5432"
       volumes:
         - users_postgres_data:/var/lib/postgresql/data
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U myuser -d users_db"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
 
   collector.database:
     image: postgres:17-bookworm
@@ -38,6 +45,11 @@ services:
       - "5433:5433"
     volumes:
       - collector_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d collector_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   adminer:
     image: adminer
@@ -46,8 +58,10 @@ services:
     ports:
       - "5431:8080"
     depends_on:
-      - users.database
-      - collector.database
+      users.database:
+        condition: service_healthy
+      collector.database:
+        condition: service_healthy
 
 volumes:
   users_postgres_data:
