@@ -1,0 +1,54 @@
+services:
+  collectorshopapi:
+    image: ${DOCKER_REGISTRY-}collectorshopapi
+    build:
+      context: .
+      dockerfile: CollectorShopApi/Dockerfile
+    environment:
+      - ASPNETCORE_URLS=https://+:5001;http://+:5000
+    ports:
+          - "5000:5000"
+          - "5001:5001"
+    depends_on:
+          - users.database
+          - collector.database
+
+  users.database:
+      image: postgres:17-bookworm
+      container_name: collectorshop-users-postgres
+      restart: always
+      environment:
+        POSTGRES_USER: myuser
+        POSTGRES_PASSWORD: mypassword
+        POSTGRES_DB: users_db
+      ports:
+        - "5432:5432"
+      volumes:
+        - users_postgres_data:/var/lib/postgresql/data
+
+  collector.database:
+    image: postgres:17-bookworm
+    container_name: collectorshop-collector-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: collector_db
+    ports:
+      - "5433:5433"
+    volumes:
+      - collector_postgres_data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    container_name: collectorshop-adminer
+    restart: always
+    ports:
+      - "5431:8080"
+    depends_on:
+      - users.database
+      - collector.database
+
+volumes:
+  users_postgres_data:
+  collector_postgres_data:
