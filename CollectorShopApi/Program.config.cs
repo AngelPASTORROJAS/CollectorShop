@@ -147,6 +147,10 @@ public static class ApplicationSetup
 
     public static WebApplication ConfigurePipeline(this WebApplication app)
     {
+        if (!app.Environment.IsDevelopment())
+        {
+            app.UseHsts();
+        }
         // 1. Redirection HTTPS en premier
         app.UseHttpsRedirection();
 
