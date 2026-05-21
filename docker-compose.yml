@@ -1,4 +1,7 @@
 services:
+  # ==========================================
+  # APPLICATION API CORE (.NET 10)
+  # ==========================================
   collectorshopapi:
     image: ${DOCKER_REGISTRY-}collectorshopapi
     build:
@@ -6,33 +9,44 @@ services:
       dockerfile: CollectorShopApi/Dockerfile
     environment:
       - ASPNETCORE_URLS=https://+:5001;http://+:5000
+      - StorageSettings__StorageFolder=/app/user_documents # On indique à l'API d'écrire dans le dossier monté par le volume Docker
     ports:
       - "5000:5000"
       - "5001:5001"
+    volumes:
+      - csharp_document_storage:/app/user_documents # On monte le volume partagé dans le dossier de l'API
     depends_on:
       users.database:
         condition: service_healthy
       collector.database:
         condition: service_healthy
+      finance.database:
+        condition: service_healthy
 
+  # ==========================================
+  # 1. BULLE IDENTITÉ & RGPD (Données Personnelles)
+  # ==========================================
   users.database:
-      image: postgres:17-bookworm
-      container_name: collectorshop-users-postgres
-      restart: always
-      environment:
-        POSTGRES_USER: myuser
-        POSTGRES_PASSWORD: mypassword
-        POSTGRES_DB: users_db
-      ports:
-        - "5432:5432"
-      volumes:
-        - users_postgres_data:/var/lib/postgresql/data
-      healthcheck:
-        test: ["CMD-SHELL", "pg_isready -U myuser -d users_db"]
-        interval: 10s
-        timeout: 5s
-        retries: 5
+    image: postgres:17-bookworm
+    container_name: collectorshop-users-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: users_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - users_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d users_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # ==========================================
+  # 2. BULLE MÉTIER PUBLIC (Catalogue & Trafic Masse)
+  # ==========================================
   collector.database:
     image: postgres:17-bookworm
     container_name: collectorshop-collector-postgres
@@ -51,6 +65,30 @@ services:
       timeout: 5s
       retries: 5
 
+  # ==========================================
+  # 3. BULLE HAUTE SÉCURITÉ (Finance, Commission, Audit)
+  # ==========================================
+  finance.database:
+    image: postgres:17-bookworm
+    container_name: collectorshop-finance-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: finance_db  # Héberge logiquement les schémas Trading (5%) et Audit Logs
+    ports:
+      - "5434:5434"
+    volumes:
+      - finance_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d finance_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================
+  # OUTILLAGE DE SUPERVISION DES BASES
+  # ==========================================
   adminer:
     image: adminer
     container_name: collectorshop-adminer
@@ -62,7 +100,12 @@ services:
         condition: service_healthy
       collector.database:
         condition: service_healthy
+      finance.database:
+        condition: service_healthy
 
+# Déclaration des volumes persistants pour éviter la perte de données au redémarrage
 volumes:
   users_postgres_data:
   collector_postgres_data:
+  finance_postgres_data:
+  csharp_document_storage: # C'est ce volume qui centralise TOUTES les images de TOUTES les instances d'API
