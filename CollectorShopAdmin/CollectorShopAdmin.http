@@ -1,0 +1,8 @@
+@CollectorShopAdmin_HostAddress = http://localhost:5194
+
+GET {{CollectorShopAdmin_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+#dssd

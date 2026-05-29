@@ -1,7 +1,14 @@
+# Common Blocked Ports
+# Browsers block a specific list of ports to prevent cross-protocol exploits and malicious probing. Key restricted ports include:
+  # 6000: X11 display server
+  # 20-21: FTP data and access
+  # 22: SSH
+  # 109-110: POP2 and POP3
+  # 6566: SANE port
+  # 10080: Amanda
+
 services:
-  # ==========================================
-  # APPLICATION API CORE (.NET 10)
-  # ==========================================
+    # API GRAND PUBLIC
   collectorshopapi:
     image: ${DOCKER_REGISTRY-}collectorshopapi
     build:
@@ -22,6 +29,23 @@ services:
         condition: service_healthy
       finance.database:
         condition: service_healthy
+
+  # API ADMINISTRATION (BACKOFFICE)
+  collectorshopadmin:
+    image: ${DOCKER_REGISTRY-}collectorshopadmin
+    build:
+      context: .
+      dockerfile: CollectorShopAdmin/Dockerfile
+    environment:
+      - ASPNETCORE_URLS=https://+:5004;http://+:5003
+      - StorageSettings__StorageFolder=/app/user_documents # Edition/Suppression de fichier par modération humaine
+    ports:
+      - "5003:5003"
+      - "5004:5004"
+    volumes:
+      - csharp_document_storage:/app/user_documents # Partage le même dossier d'images
+    depends_on:
+      - finance.database
 
   # ==========================================
   # 1. BULLE IDENTITÉ & RGPD (Données Personnelles)

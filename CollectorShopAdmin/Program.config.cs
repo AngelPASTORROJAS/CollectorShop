@@ -4,7 +4,7 @@ using Microsoft.Extensions.Primitives;
 using Scalar.AspNetCore;
 using System.IO.Compression;
 
-namespace CollectorShopApi;
+namespace CollectorShopAdmin;
 
 #region ConfigurationCache
 public record ConfigurationResponse(string Version, IReadOnlyDictionary<string, object> Features);
@@ -115,14 +115,9 @@ public class ConfigurationCache : IConfigurationCache, IDisposable
 #region StartUp
 public static class ApplicationSetup
 {
-    // --- Configuration du Domaine Public (Utilisateurs / Acheteurs / Vendeurs) ---
-    private static readonly string[] ALLOWED_ORIGINS = ["http://localhost:3000"];
-    private static readonly string[] ALLOWED_HEADERS = ["Content-Type", "Authorization"];
-    private static readonly string[] ALLOWED_METHODS = ["GET"]; // Uniquement du GET (Ex: catalogue public)
-
     // --- Configuration du Domaine Privé (BackOffice / Audit / Administrateurs) ---
     private static readonly string ALLOWED_ADMIN_POLICY_NAME = "backoffice";
-    private static readonly string[] ALLOWED_ADMIN_ORIGINS = ["http://localhost:4200"];
+    private static readonly string[] ALLOWED_ADMIN_ORIGINS = ["http://localhost:5003", "https://localhost:5004"];
     private static readonly string[] ALLOWED_ADMIN_HEADERS = ["Content-Type", "Authorization"];
     private static readonly string[] ALLOWED_ADMIN_METHODS = ["GET", "POST"]; // Uniquement GET et POST (Vérifications, rafraîchissement cache)
     
@@ -142,11 +137,6 @@ public static class ApplicationSetup
 
         builder.Services.AddCors(options => {
             options.AddDefaultPolicy(policy => policy
-                .WithOrigins(ALLOWED_ORIGINS)
-                .WithHeaders(ALLOWED_HEADERS)
-                .WithMethods(ALLOWED_METHODS));
-
-            options.AddPolicy(ALLOWED_ADMIN_POLICY_NAME, policy => policy
                 .WithOrigins(ALLOWED_ADMIN_ORIGINS)
                 .WithHeaders(ALLOWED_ADMIN_HEADERS)
                 .WithMethods(ALLOWED_ADMIN_METHODS));

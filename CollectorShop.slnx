@@ -1,5 +1,8 @@
 <Solution>
-  <Project Path="CollectorShopApi/CollectorShopApi.csproj" />
+  <Folder Name="/01_Presentation/">
+    <Project Path="CollectorShopAdmin/CollectorShopAdmin.csproj" />
+    <Project Path="CollectorShopApi/CollectorShopApi.csproj" />
+  </Folder>
   <Project Path="docker-compose.dcproj">
     <Build />
   </Project>
