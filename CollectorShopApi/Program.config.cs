@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Collector.Shared.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Primitives;
 using Scalar.AspNetCore;
@@ -139,6 +140,7 @@ public static class ApplicationSetup
         builder.Services.AddOpenApi();
 
         builder.Services.AddSingleton<IConfigurationCache, ConfigurationCache>();
+        builder.Services.AddSingleton<IDbConnectionFactory, PgDbConnectionFactory>();
 
         builder.Services.AddCors(options => {
             options.AddDefaultPolicy(policy => policy
