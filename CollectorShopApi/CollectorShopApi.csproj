@@ -20,8 +20,4 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Collector.Shared.Infrastructure\Collector.Shared.Infrastructure.csproj" />
-  </ItemGroup>
-
 </Project>
