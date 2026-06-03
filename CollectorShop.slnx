@@ -3,9 +3,6 @@
     <Project Path="CollectorShopAdmin/CollectorShopAdmin.csproj" />
     <Project Path="CollectorShopApi/CollectorShopApi.csproj" />
   </Folder>
-  <Folder Name="/04_Infrastructure/">
-    <Project Path="../Collector.Shared.Infrastructure/Collector.Shared.Infrastructure.csproj" Id="a8e62084-f08a-4191-b0cb-719903f25110" />
-  </Folder>
   <Project Path="docker-compose.dcproj">
     <Build />
   </Project>
