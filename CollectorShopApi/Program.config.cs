@@ -1,4 +1,5 @@
 ﻿using Collector.Shared.Infrastructure;
+using Collector.Shared.Infrastructure.Ram;
 using Collectors.Infra.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -139,6 +140,9 @@ public static class ApplicationSetup
 
         builder.Services.AddSingleton<IDbConnectionFactory, PgDbConnectionFactory>();
 
+        // ENREGISTREMENT DU CACHE GLOBAL EN RAM 
+        builder.Services.AddSingleton<IGlobalCache, GlobalCacheService>();
+
         // Repositories ADO.NET (En mode Transient ou Scoped, au choix, ici Transient car ils n'ont pas d'état)
         builder.Services.AddTransient<SqlUserRepository>();
         builder.Services.AddTransient<SqlCollectorRepository>();
@@ -214,8 +218,36 @@ public static class ApplicationSetup
         // Endpoint technique de configuration dynamique
         app.MapGet("/configuration", ([FromServices] IConfigurationCache cache) => Results.Ok(cache.GetCurrent()));
 
+        // Route pour recharger UNIQUEMENT la brique utilisateur à chaud (Ex: après modif SQL)
+        app.MapPost("/infra/cache/refresh/users", ([FromServices] IGlobalCache cache) =>
+        {
+            cache.RefreshUsers();
+            return Results.Ok(new { Message = "Cache des utilisateurs rechargé avec succès.", Time = cache.GetLoadTime() });
+        });
+
+        // Route pour recharger l'INTEGRALITE du système
+        app.MapPost("/infra/cache/refresh/all", ([FromServices] IGlobalCache cache) =>
+        {
+            cache.RefreshAll();
+            return Results.Ok(new { Message = "L'intégralité du cache global a été synchronisée.", Time = cache.GetLoadTime() });
+        });
+
+        // 1. Initialisation de la factory statique pour ADO.NET
         var factory = app.Services.GetRequiredService<IDbConnectionFactory>();
         StaticConnectionFactory.Initialize(factory);
+
+        // 2. PRE-CHARGEMENT DES DONNÉES CRITIQUES EN RAM AU DÉMARRAGE
+        var globalCache = app.Services.GetRequiredService<IGlobalCache>();
+        try
+        {
+            globalCache.RefreshAll();
+            Console.WriteLine($"[Cache] Données globales chargées avec succès en RAM à {globalCache.GetLoadTime()}");
+        }
+        catch (Exception ex)
+        {
+            // En production, on peut logguer l'erreur ou bloquer le démarrage si les données sont indispensables
+            Console.WriteLine($"[Cache Erreur] Impossible de pré-charger les données au démarrage : {ex.Message}");
+        }
 
         return app;
     }

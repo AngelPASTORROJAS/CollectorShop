@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Collector.Shared.Infrastructure.Ram;
+using Microsoft.AspNetCore.Mvc;
 using Users.Infra.Persistence;
 
 namespace CollectorShopApi.Controllers;
@@ -8,12 +9,15 @@ namespace CollectorShopApi.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly SqlUserRepository _userRepository;
+    private readonly IGlobalCache _cache;
 
-    // L'injection de dépendances fournit automatiquement le Repository configuré
-    public UsersController(SqlUserRepository userRepository)
+    // On injecte le cache global à la place ou en complément du Repository
+    public UsersController(SqlUserRepository userRepository, IGlobalCache cache)
     {
         _userRepository = userRepository;
+        _cache = cache;
     }
+    
 
     [HttpGet("{id:guid}")]
     public IActionResult GetUser(Guid id)
@@ -27,5 +31,19 @@ public class UsersController : ControllerBase
         }
 
         return Ok(userDto);
+    }
+
+    [HttpGet("cached/{id:long}")]
+    public IActionResult GetUserFromCache(long id)
+    {
+        // Lecture directe et instantanée par clé bigint
+        var userRam = _cache.GetUserById(id);
+
+        if (userRam == null)
+        {
+            return NotFound(new { Message = $"Utilisateur avec l'ID {id} introuvable en RAM." });
+        }
+
+        return Ok(userRam);
     }
 }

@@ -15,7 +15,11 @@ public static class PgDataExtensions
 
     public static int? GetInt(this DataRow row, string fieldName)
         => row.IsNull(fieldName) ? null : (int)row[fieldName];
-
+    
     public static bool GetBool(this DataRow row, string fieldName)
         => !row.IsNull(fieldName) && (bool)row[fieldName];
+
+    public static long? GetLong(this DataRow row, string fieldName)
+        => row.IsNull(fieldName) ? null : (long)row[fieldName];
+
 }
