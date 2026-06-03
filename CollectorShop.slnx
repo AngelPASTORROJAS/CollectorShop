@@ -3,6 +3,12 @@
     <Project Path="CollectorShopAdmin/CollectorShopAdmin.csproj" />
     <Project Path="CollectorShopApi/CollectorShopApi.csproj" />
   </Folder>
+  <Folder Name="/04_Infrastructure/">
+    <Project Path="04_Infrastructure/Collector.Shared.Infrastructure/Collector.Shared.Infrastructure.csproj" Id="0f658a76-b2f0-4705-8a36-59bfca5f37f9" />
+    <Project Path="04_Infrastructure/Collectors.Infra/Collectors.Infra.csproj" Id="1b04eb90-dbc4-497d-b7b6-76d3e59aee5b" />
+    <Project Path="04_Infrastructure/Trading.Infra/Trading.Infra.csproj" Id="88d9c0f3-7ac3-4928-b3d5-92adb9313463" />
+    <Project Path="04_Infrastructure/Users.Infra/Users.Infra.csproj" Id="65c6ec3f-9e05-4481-9fdd-c002ab2f973d" />
+  </Folder>
   <Project Path="docker-compose.dcproj">
     <Build />
   </Project>

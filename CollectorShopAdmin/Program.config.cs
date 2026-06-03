@@ -1,9 +1,12 @@
 ﻿using Collector.Shared.Infrastructure;
+using Collectors.Infra.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Primitives;
 using Scalar.AspNetCore;
 using System.IO.Compression;
+using Trading.Infra.Persistence;
+using Users.Infra.Persistence;
 
 namespace CollectorShopAdmin;
 
@@ -135,7 +138,13 @@ public static class ApplicationSetup
         builder.Services.AddOpenApi();
 
         builder.Services.AddSingleton<IConfigurationCache, ConfigurationCache>();
+        
         builder.Services.AddSingleton<IDbConnectionFactory, PgDbConnectionFactory>();
+
+        // Repositories ADO.NET (En mode Transient ou Scoped, au choix, ici Transient car ils n'ont pas d'état)
+        builder.Services.AddTransient<SqlUserRepository>();
+        builder.Services.AddTransient<SqlCollectorRepository>();
+        builder.Services.AddTransient<SqlTradingRepository>();
 
         builder.Services.AddCors(options => {
             options.AddDefaultPolicy(policy => policy

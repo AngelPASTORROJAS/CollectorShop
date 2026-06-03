@@ -27,6 +27,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\04_Infrastructure\Collector.Shared.Infrastructure\Collector.Shared.Infrastructure.csproj" />
+    <ProjectReference Include="..\04_Infrastructure\Collectors.Infra\Collectors.Infra.csproj" />
+    <ProjectReference Include="..\04_Infrastructure\Trading.Infra\Trading.Infra.csproj" />
+    <ProjectReference Include="..\04_Infrastructure\Users.Infra\Users.Infra.csproj" />
+    <ProjectReference Include="..\CollectorShopApi\CollectorShopApi.csproj" />
   </ItemGroup>
 
 </Project>

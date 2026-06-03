@@ -1,9 +1,12 @@
 ﻿using Collector.Shared.Infrastructure;
+using Collectors.Infra.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Primitives;
 using Scalar.AspNetCore;
 using System.IO.Compression;
+using Trading.Infra.Persistence;
+using Users.Infra.Persistence;
 
 namespace CollectorShopApi;
 
@@ -131,16 +134,16 @@ public static class ApplicationSetup
     
     public static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
     {
-        // On retire la politique camelCase par défaut, pas de "mapping mental" => "Isomorphe"
-        builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.PropertyNamingPolicy = null);
-
-        builder.Services.AddControllers();
-
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddOpenApi();
 
         builder.Services.AddSingleton<IConfigurationCache, ConfigurationCache>();
+
         builder.Services.AddSingleton<IDbConnectionFactory, PgDbConnectionFactory>();
+
+        // Repositories ADO.NET (En mode Transient ou Scoped, au choix, ici Transient car ils n'ont pas d'état)
+        builder.Services.AddTransient<SqlUserRepository>();
+        builder.Services.AddTransient<SqlCollectorRepository>();
+        builder.Services.AddTransient<SqlTradingRepository>();
+
 
         builder.Services.AddCors(options => {
             options.AddDefaultPolicy(policy => policy
@@ -162,6 +165,13 @@ public static class ApplicationSetup
         });
 
         builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
+ 
+        // On retire la politique camelCase par défaut, pas de "mapping mental" => "Isomorphe"
+        builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.PropertyNamingPolicy = null);
+        
+        builder.Services.AddControllers();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddOpenApi();
 
         return builder;
     }
@@ -203,6 +213,9 @@ public static class ApplicationSetup
 
         // Endpoint technique de configuration dynamique
         app.MapGet("/configuration", ([FromServices] IConfigurationCache cache) => Results.Ok(cache.GetCurrent()));
+
+        var factory = app.Services.GetRequiredService<IDbConnectionFactory>();
+        StaticConnectionFactory.Initialize(factory);
 
         return app;
     }

@@ -18,3 +18,8 @@ GET {{CollectorShopApi_HostAddress_https}}/weatherforecast/
 Accept: application/json
 
 ###
+
+GET {{CollectorShopApi_HostAddress_https}}/api/users/0
+Accept: application/json
+
+###
