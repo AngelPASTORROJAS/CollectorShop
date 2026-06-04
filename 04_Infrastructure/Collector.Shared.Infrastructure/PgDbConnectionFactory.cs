@@ -7,9 +7,9 @@ namespace Collector.Shared.Infrastructure;
 public class PgDbConnectionFactory : IDbConnectionFactory
 {
     // Centralisation des bases de données de l'infrastructure
-    public const string DbUsers = "Users";
-    public const string DbCollector = "Collector";
-    public const string DbFinance = "Finance";
+    public const string DbUsers = "users";
+    public const string DbCollector = "collector";
+    public const string DbFinance = "finance";
 
     private readonly IConfiguration _configuration;
 

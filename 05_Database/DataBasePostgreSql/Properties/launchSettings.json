@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "DataBasePostgreSql": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

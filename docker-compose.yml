@@ -8,7 +8,25 @@
   # 10080: Amanda
 
 services:
-    # API GRAND PUBLIC
+  # =========================================================================
+  # MOTEUR DE MIGRATION (S'exécute, applique le SQL brut puis s'arrête en Succès)
+  # =========================================================================
+  database.migrator:
+    image: ${DOCKER_REGISTRY-}database-migrator
+    build:
+      context: .
+      dockerfile: 05_Database/DataBasePostgreSql/Dockerfile
+    environment:
+      # Injection des chaînes de connexion pointant vers les conteneurs du réseau Docker
+      - DB_USERS_CONNECTION=Host=collectorshop-users-postgres;Port=5432;Database=users_db;Username=myuser;Password=mypassword;
+      - DB_FINANCE_CONNECTION=Host=collectorshop-finance-postgres;Port=5434;Database=finance_db;Username=myuser;Password=mypassword;
+    depends_on:
+      users.database:
+        condition: service_healthy
+      finance.database:
+        condition: service_healthy
+
+  # API GRAND PUBLIC
   collectorshopapi:
     image: ${DOCKER_REGISTRY-}collectorshopapi
     build:
@@ -29,6 +47,8 @@ services:
         condition: service_healthy
       finance.database:
         condition: service_healthy
+      database.migrator:
+        condition: service_completed_successfully # L'API n'écoute pas tant que les scripts SQL ne sont pas appliqués !
 
   # API ADMINISTRATION (BACKOFFICE)
   collectorshopadmin:

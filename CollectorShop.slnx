@@ -9,6 +9,9 @@
     <Project Path="04_Infrastructure/Trading.Infra/Trading.Infra.csproj" Id="88d9c0f3-7ac3-4928-b3d5-92adb9313463" />
     <Project Path="04_Infrastructure/Users.Infra/Users.Infra.csproj" Id="65c6ec3f-9e05-4481-9fdd-c002ab2f973d" />
   </Folder>
+  <Folder Name="/05_DataBase/">
+    <Project Path="05_Database/DataBasePostgreSql/DataBasePostgreSql.csproj" Id="77f69d98-ce4a-4c68-b153-c728ff92dc6b" />
+  </Folder>
   <Project Path="docker-compose.dcproj">
     <Build />
   </Project>
