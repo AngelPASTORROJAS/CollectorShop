@@ -48,7 +48,7 @@ services:
       finance.database:
         condition: service_healthy
       database.migrator:
-        condition: service_completed_successfully # L'API n'écoute pas tant que les scripts SQL ne sont pas appliqués !
+        condition: service_started # service_completed_successfully # L'API n'écoute pas tant que les scripts SQL ne sont pas appliqués !
 
   # API ADMINISTRATION (BACKOFFICE)
   collectorshopadmin:

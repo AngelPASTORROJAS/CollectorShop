@@ -149,5 +149,90 @@ public class PgSqlQuery : IDisposable
         return dataTable;
     }
 
+    /// <summary>
+    /// Exécute une commande d'écriture (INSERT, UPDATE, DELETE, Stored Proc de mise à jour)
+    /// sans allouer de DataTable. Renvoie le nombre de lignes affectées.
+    /// </summary>
+    public int ExecuteNonQuery()
+    {
+        NpgsqlConnection? connection = null;
+        NpgsqlCommand? command = null;
+
+        try
+        {
+            if (_transaction != null)
+            {
+                connection = _transaction.Connection;
+            }
+            else
+            {
+                if (StaticConnectionFactory.Instance == null)
+                    throw new InvalidOperationException("StaticConnectionFactory non initialisé.");
+
+                connection = (NpgsqlConnection)StaticConnectionFactory.Instance.CreateOpenConnection(TargetDatabase);
+            }
+
+            command = GetCommand(connection);
+            return command.ExecuteNonQuery(); // Léger, rapide, zéro allocation inutile
+        }
+        catch (Exception ex)
+        {
+            LastException = ex;
+            if (AutoThrowException) throw;
+            return -1;
+        }
+        finally
+        {
+            command?.Dispose();
+            if (_transaction == null && connection != null)
+            {
+                connection.Close();
+                connection.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Version asynchrone performante de ExecuteNonQuery
+    /// </summary>
+    public async Task<int> ExecuteNonQueryAsync()
+    {
+        NpgsqlConnection? connection = null;
+        NpgsqlCommand? command = null;
+
+        try
+        {
+            if (_transaction != null)
+            {
+                connection = _transaction.Connection;
+            }
+            else
+            {
+                if (StaticConnectionFactory.Instance == null)
+                    throw new InvalidOperationException("StaticConnectionFactory non initialisé.");
+
+                connection = (NpgsqlConnection)StaticConnectionFactory.Instance.CreateOpenConnection(TargetDatabase);
+            }
+
+            command = GetCommand(connection);
+            return await command.ExecuteNonQueryAsync();
+        }
+        catch (Exception ex)
+        {
+            LastException = ex;
+            if (AutoThrowException) throw;
+            return -1;
+        }
+        finally
+        {
+            command?.Dispose();
+            if (_transaction == null && connection != null)
+            {
+                await connection.CloseAsync();
+                await connection.DisposeAsync();
+            }
+        }
+    }
+
     public void Dispose() { }
 }

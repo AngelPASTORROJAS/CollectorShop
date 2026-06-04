@@ -19,8 +19,8 @@ public class UsersController : ControllerBase
     }
     
 
-    [HttpGet("{id:guid}")]
-    public IActionResult GetUser(Guid id)
+    [HttpGet("{id:long}")]
+    public IActionResult GetUser(long id)
     {
         // Appel de ta méthode ADO.NET sans fioriture
         var userDto = _userRepository.GetUserById(id);

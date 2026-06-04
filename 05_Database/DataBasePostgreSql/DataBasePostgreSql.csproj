@@ -21,9 +21,7 @@
   </ItemGroup>
 	
   <ItemGroup>
-    <Folder Include="DbUsers\" />
     <Folder Include="DbCollector\" />
-    <Folder Include="DbFinance\" />
   </ItemGroup>
 
 </Project>
