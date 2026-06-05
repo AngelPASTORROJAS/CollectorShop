@@ -58,9 +58,28 @@ CREATE TABLE IF NOT EXISTS financial_ledger (
 CREATE INDEX IF NOT EXISTS idx_ledger_recorded_at ON financial_ledger(recorded_at);
 CREATE INDEX IF NOT EXISTS idx_ledger_transaction ON financial_ledger(transaction_id);
 
+-- =========================================================================
+-- Fonctions & Déclencheurs (Triggers)
+-- =========================================================================
+
+-- 1. Fonction générique de mise à jour temporelle
+CREATE OR REPLACE FUNCTION trigger_set_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 2. Application du trigger sur la table financial_transactions
+CREATE OR REPLACE TRIGGER set_timestamp_financial_transactions
+    BEFORE UPDATE ON financial_transactions
+    FOR EACH ROW
+    EXECUTE FUNCTION trigger_set_timestamp();
+
 
 -- =========================================================================
--- MIGRATION : Procédures stockées
+-- Procédures stockées
 -- =========================================================================
 
 CREATE OR REPLACE FUNCTION sp_process_trade(

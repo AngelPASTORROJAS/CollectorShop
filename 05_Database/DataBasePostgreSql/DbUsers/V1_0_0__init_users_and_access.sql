@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS users (
     deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_users_deleted_at ON users(deleted_at);
+CREATE INDEX IF NOT EXISTS idx_users_active_partial ON users(id) WHERE deleted_at IS NULL;
+
 CREATE INDEX IF NOT EXISTS idx_users_user_group ON users(user_group);
 
 CREATE TABLE IF NOT EXISTS access (
@@ -41,6 +42,24 @@ INSERT INTO access (code, description) VALUES
 ('USER_MANAGE_GROUP', 'Gestion des utilisateurs de son PROPRE groupe uniquement (Admin Client)')
 ON CONFLICT (code) DO NOTHING;
 
+-- =========================================================================
+-- Fonctions & Déclencheurs (Triggers)
+-- =========================================================================
+
+-- 1. Fonction générique de mise à jour temporelle
+CREATE OR REPLACE FUNCTION trigger_set_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 2. Application du trigger sur la table users
+CREATE OR REPLACE TRIGGER set_timestamp_users
+    BEFORE UPDATE ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION trigger_set_timestamp();
 
 -- =========================================================================
 -- MIGRATION : Procédures stockées
