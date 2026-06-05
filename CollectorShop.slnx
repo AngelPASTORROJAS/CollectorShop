@@ -1,6 +1,5 @@
 <Solution>
   <Folder Name="/01_Presentation/">
-    <Project Path="CollectorShopAdmin/CollectorShopAdmin.csproj" />
     <Project Path="CollectorShopApi/CollectorShopApi.csproj" />
   </Folder>
   <Folder Name="/04_Infrastructure/">

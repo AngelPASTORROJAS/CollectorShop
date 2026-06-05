@@ -363,7 +363,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Front (wwwroot)
-**/wwwroot/
+#**/wwwroot/**/
 
 # User documents (uploads)
 **/user_documents/

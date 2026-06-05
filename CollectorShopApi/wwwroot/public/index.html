@@ -1,0 +1,88 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CollectorShop - Site Public (Test)</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            background: #f0f4f8;
+            color: #102a43;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: #0b69a3;
+            margin-top: 0;
+        }
+
+        button {
+            background: #0b69a3;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+            button:hover {
+                background: #127fbf;
+            }
+
+        pre {
+            background: #f0f4f8;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+
+        .badge {
+            background: #e3f2fd;
+            color: #0d47a1;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>CollectorShop <span class="badge">Grand Public</span></h1>
+        <p>Si vous voyez cette page, le routage de la racine <code>/</code> vers <code>wwwroot/public/</code> fonctionne parfaitement.</p>
+
+        <button onclick="testApi()">Tester l'API (/configuration)</button>
+        <p>Réponse de l'API :</p>
+        <pre id="output">Cliquez sur le bouton pour tester...</pre>
+
+        <p><a href="/admin">Accéder à l'espace d'administration →</a></p>
+    </div>
+
+    <script>
+        async function testApi() {
+            const output = document.getElementById('output');
+            try {
+                output.textContent = "Appel en cours...";
+                const response = await fetch('/configuration');
+                if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
+                const data = await response.json();
+                output.textContent = JSON.stringify(data, null, 2);
+            } catch (err) {
+                output.textContent = `Erreur : ${err.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

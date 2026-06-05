@@ -17,7 +17,8 @@
 
   <ItemGroup>
     <Folder Include="user_documents\" />
-    <Folder Include="wwwroot\" />
+	<Folder Include="wwwroot\public\" />
+	<Folder Include="wwwroot\admin\" />
   </ItemGroup>
 
   <ItemGroup>

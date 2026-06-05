@@ -3,6 +3,7 @@ using Collector.Shared.Infrastructure.Ram;
 using Collectors.Infra.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using Scalar.AspNetCore;
 using System.IO.Compression;
@@ -120,17 +121,14 @@ public class ConfigurationCache : IConfigurationCache, IDisposable
 #region StartUp
 public static class ApplicationSetup
 {
-    // --- Configuration du Domaine Public (Utilisateurs / Acheteurs / Vendeurs) ---
-    private static readonly string[] ALLOWED_ORIGINS = ["http://localhost:3000"];
+    // --- Configuration du Domaine ---
+    private static readonly string[] ALLOWED_ORIGINS = [
+        "http://localhost:5001", "https://localhost:5002",  // Public (Utilisateurs / Acheteurs / Vendeurs)
+        "http://localhost:5003", "https://localhost:5004"   // Privé (Admin)
+        ];
     private static readonly string[] ALLOWED_HEADERS = ["Content-Type", "Authorization"];
     private static readonly string[] ALLOWED_METHODS = ["GET"]; // Uniquement du GET (Ex: catalogue public)
 
-    // --- Configuration du Domaine Privé (BackOffice / Audit / Administrateurs) ---
-    private static readonly string ALLOWED_ADMIN_POLICY_NAME = "backoffice";
-    private static readonly string[] ALLOWED_ADMIN_ORIGINS = ["http://localhost:4200"];
-    private static readonly string[] ALLOWED_ADMIN_HEADERS = ["Content-Type", "Authorization"];
-    private static readonly string[] ALLOWED_ADMIN_METHODS = ["GET", "POST"]; // Uniquement GET et POST (Vérifications, rafraîchissement cache)
-    
     private static readonly IEnumerable<string> CROMPRESSED_MIME_TYPES = ResponseCompressionDefaults.MimeTypes.Concat(["application/json"]);
     
     public static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
@@ -154,11 +152,6 @@ public static class ApplicationSetup
                 .WithOrigins(ALLOWED_ORIGINS)
                 .WithHeaders(ALLOWED_HEADERS)
                 .WithMethods(ALLOWED_METHODS));
-
-            options.AddPolicy(ALLOWED_ADMIN_POLICY_NAME, policy => policy
-                .WithOrigins(ALLOWED_ADMIN_ORIGINS)
-                .WithHeaders(ALLOWED_ADMIN_HEADERS)
-                .WithMethods(ALLOWED_ADMIN_METHODS));
         });
 
         builder.Services.AddResponseCompression(options =>
@@ -194,9 +187,20 @@ public static class ApplicationSetup
         // 2. Compression (Doit intercepter le flux le plus haut possible)
         app.UseResponseCompression();
 
-        // 3. Gestion des fichiers statiques locaux (wwwroot)
-        app.UseDefaultFiles();
-        app.UseStaticFiles();
+        // 3. Gestion des fichiers statiques locaux (wwwroot) => public, privé
+        // 1. Pour le site Grand Public (Ex: accessible directement sur la racine http://localhost:5000/)
+        app.UseFileServer(new FileServerOptions
+        {
+            FileProvider = new PhysicalFileProvider(Path.Combine(app.Environment.ContentRootPath, "wwwroot", "public")),
+            RequestPath = "" // Racine
+        });
+
+        // 2. Pour le Backoffice Admin (Ex: accessible uniquement sur http://localhost:5000/admin)
+        app.UseFileServer(new FileServerOptions
+        {
+            FileProvider = new PhysicalFileProvider(Path.Combine(app.Environment.ContentRootPath, "wwwroot", "admin")),
+            RequestPath = "/admin" // Route dédiée
+        });
 
         // 4. CORS (Doit être exécuté impérativement AVANT le routage et l'authentification)
         app.UseCors();

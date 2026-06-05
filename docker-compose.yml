@@ -7,6 +7,8 @@
   # 6566: SANE port
   # 10080: Amanda
 
+# Common Blocked Ports Reminder (Keep ports like 5000-5004 free from system service conflicts)
+
 services:
   # =========================================================================
   # MOTEUR DE MIGRATION (S'exécute, applique le SQL brut puis s'arrête en Succès)
@@ -17,16 +19,18 @@ services:
       context: .
       dockerfile: 05_Database/DataBasePostgreSql/Dockerfile
     environment:
-      # Injection des chaînes de connexion pointant vers les conteneurs du réseau Docker
       - DB_USERS_CONNECTION=Host=collectorshop-users-postgres;Port=5432;Database=users_db;Username=myuser;Password=mypassword;
       - DB_FINANCE_CONNECTION=Host=collectorshop-finance-postgres;Port=5434;Database=finance_db;Username=myuser;Password=mypassword;
+      - DB_COLLECTOR_CONNECTION=Host=collectorshop-collector-postgres;Port=5433;Database=collector_db;Username=myuser;Password=mypassword;
     depends_on:
       users.database:
+        condition: service_healthy
+      collector.database:
         condition: service_healthy
       finance.database:
         condition: service_healthy
 
-  # API GRAND PUBLIC
+  # API UNIQUE & UNIFIÉE (GRAND PUBLIC + BACKOFFICE)
   collectorshopapi:
     image: ${DOCKER_REGISTRY-}collectorshopapi
     build:
@@ -34,12 +38,12 @@ services:
       dockerfile: CollectorShopApi/Dockerfile
     environment:
       - ASPNETCORE_URLS=https://+:5001;http://+:5000
-      - StorageSettings__StorageFolder=/app/user_documents # On indique à l'API d'écrire dans le dossier monté par le volume Docker
+      - StorageSettings__StorageFolder=/app/user_documents
     ports:
       - "5000:5000"
       - "5001:5001"
     volumes:
-      - csharp_document_storage:/app/user_documents # On monte le volume partagé dans le dossier de l'API
+      - csharp_document_storage:/app/user_documents # Le volume est conservé pour l'accès aux documents/images
     depends_on:
       users.database:
         condition: service_healthy
@@ -48,24 +52,7 @@ services:
       finance.database:
         condition: service_healthy
       database.migrator:
-        condition: service_started # service_completed_successfully # L'API n'écoute pas tant que les scripts SQL ne sont pas appliqués !
-
-  # API ADMINISTRATION (BACKOFFICE)
-  collectorshopadmin:
-    image: ${DOCKER_REGISTRY-}collectorshopadmin
-    build:
-      context: .
-      dockerfile: CollectorShopAdmin/Dockerfile
-    environment:
-      - ASPNETCORE_URLS=https://+:5004;http://+:5003
-      - StorageSettings__StorageFolder=/app/user_documents # Edition/Suppression de fichier par modération humaine
-    ports:
-      - "5003:5003"
-      - "5004:5004"
-    volumes:
-      - csharp_document_storage:/app/user_documents # Partage le même dossier d'images
-    depends_on:
-      - finance.database
+        condition: service_started
 
   # ==========================================
   # 1. BULLE IDENTITÉ & RGPD (Données Personnelles)
@@ -119,7 +106,7 @@ services:
     environment:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: finance_db  # Héberge logiquement les schémas Trading (5%) et Audit Logs
+      POSTGRES_DB: finance_db
     ports:
       - "5434:5434"
     volumes:
@@ -147,9 +134,8 @@ services:
       finance.database:
         condition: service_healthy
 
-# Déclaration des volumes persistants pour éviter la perte de données au redémarrage
 volumes:
   users_postgres_data:
   collector_postgres_data:
   finance_postgres_data:
-  csharp_document_storage: # C'est ce volume qui centralise TOUTES les images de TOUTES les instances d'API
+  csharp_document_storage:
