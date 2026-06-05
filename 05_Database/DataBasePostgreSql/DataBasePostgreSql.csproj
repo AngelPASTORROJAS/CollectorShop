@@ -19,9 +19,5 @@
 	<EmbeddedResource Include="DbCollector\**\*.sql" />
     <EmbeddedResource Include="DbFinance\**\*.sql" />
   </ItemGroup>
-	
-  <ItemGroup>
-    <Folder Include="DbCollector\" />
-  </ItemGroup>
 
 </Project>
