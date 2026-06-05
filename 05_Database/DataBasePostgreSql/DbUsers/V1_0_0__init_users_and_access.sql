@@ -6,21 +6,25 @@
 
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     user_group VARCHAR(50), -- Contient le nom/ID de l'entreprise du client
+    
+    -- NOM COMMERCIAL (Non unique, autorise les doublons)
+    business_name VARCHAR(100) NOT NULL, 
 
-    -- AJOUTS CONFORMITÉ RGPD
+    -- AJOUTS CONFORMITÉ RGPD & AUDIT TRAIL
     cgu_accepted_at TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT, -- ID de l'utilisateur ou du système ayant fait la modification
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_by BIGINT, -- ID de l'admin ou du manager ayant supprimé le compte (Rejeter la faute)
     deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
 );
 
+-- Index partiel pour maximiser les performances de sp_load_users_ram
 CREATE INDEX IF NOT EXISTS idx_users_active_partial ON users(id) WHERE deleted_at IS NULL;
-
 CREATE INDEX IF NOT EXISTS idx_users_user_group ON users(user_group);
 
 CREATE TABLE IF NOT EXISTS access (
@@ -68,19 +72,18 @@ CREATE OR REPLACE TRIGGER set_timestamp_users
 CREATE OR REPLACE FUNCTION sp_load_users_ram()
 RETURNS TABLE (
     id BIGINT,
-    username VARCHAR(50),
+    business_name VARCHAR(100),
     email VARCHAR(150),
     is_active BOOLEAN,
     user_group VARCHAR(50),
     can_config_reload BOOLEAN,
     can_user_manage_all BOOLEAN,
-    can_user_manage_group BOOLEAN
-) AS $$
+    can_user_manage_group BOOLEAN) AS $$
 BEGIN
     RETURN QUERY
     SELECT 
         u.id,
-        u.username,
+        u.business_name,
         u.email,
         u.is_active,
         u.user_group,
@@ -91,6 +94,39 @@ BEGIN
     LEFT JOIN user_access ua ON u.id = ua.user_id
     LEFT JOIN access a ON ua.access_id = a.id
     WHERE u.deleted_at IS NULL
-    GROUP BY u.id, u.username, u.email, u.is_active, u.user_group;
+    GROUP BY u.id, u.business_name, u.email, u.is_active, u.user_group;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION sp_soft_delete_user(
+    p_user_id BIGINT,
+    p_deleted_by_id BIGINT
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_rows_updated INT;
+BEGIN
+    -- Mises à jour avec anonymisation des données sensibles (Conformité RGPD)
+    UPDATE users
+    SET 
+        -- On préserve explicitement 'business_name' pour la BI et la traçabilité à long terme
+        email = 'deleted_' || p_user_id || '@collector-shop.internal',
+        password_hash = 'GDPR_ANONYMIZED',
+        is_active = FALSE,
+        user_group = NULL,
+        deleted_by = p_deleted_by_id, -- Enregistrement de l'auteur de la suppression
+        deleted_at = NOW()             -- Le trigger 'set_timestamp_users' mettra aussi à jour 'updated_at'
+    WHERE id = p_user_id 
+      AND deleted_at IS NULL;
+
+    GET DIAGNOSTICS v_rows_updated = ROW_COUNT;
+
+    -- Supprime également tous ses accès spécifiques par sécurité
+    IF v_rows_updated > 0 THEN
+        DELETE FROM user_access WHERE user_id = p_user_id;
+        RETURN TRUE;
+    END IF;
+
+    RETURN FALSE;
 END;
 $$ LANGUAGE plpgsql;

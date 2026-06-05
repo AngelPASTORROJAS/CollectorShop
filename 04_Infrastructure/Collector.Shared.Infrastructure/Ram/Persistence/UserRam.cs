@@ -19,7 +19,7 @@ public record UserRam
     public UserRam(DataRow row)
     {
         Id = row.GetLong("id") ?? 0L;
-        Username = row.GetString("username") ?? "";
+        Username = row.GetString("business_name") ?? "";
         Email = row.GetString("email") ?? "";
         IsActive = row.GetBool("is_active");
         UserGroup = row.GetString("user_group");
