@@ -41,7 +41,11 @@ INSERT INTO access (code, description) VALUES
 ('USER_MANAGE_GROUP', 'Gestion des utilisateurs de son PROPRE groupe uniquement (Admin Client)')
 ON CONFLICT (code) DO NOTHING;
 
--- Procédure de chargement optimisée pour la RAM 
+
+-- =========================================================================
+-- MIGRATION : Procédures stockées
+-- =========================================================================
+
 CREATE OR REPLACE FUNCTION sp_load_users_ram()
 RETURNS TABLE (
     id BIGINT,
