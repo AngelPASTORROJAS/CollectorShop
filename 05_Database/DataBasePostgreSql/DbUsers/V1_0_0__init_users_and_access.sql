@@ -69,6 +69,58 @@ CREATE OR REPLACE TRIGGER set_timestamp_users
 -- MIGRATION : Procédures stockées
 -- =========================================================================
 
+CREATE OR REPLACE FUNCTION sp_create_user(
+    p_email VARCHAR(150),
+    p_password_hash VARCHAR(255),
+    p_business_name VARCHAR(100),
+    p_user_group VARCHAR(50) DEFAULT NULL,
+    p_access_code VARCHAR(50) DEFAULT NULL -- Permet d'injecter un droit de base à la création (ex: 'USER_MANAGE_GROUP')
+)
+RETURNS BIGINT AS $$
+DECLARE
+    v_user_id BIGINT;
+    v_access_id INT;
+BEGIN
+    -- 1. Vérification de sécurité applicative (Évite de polluer les logs avec des crashs de contrainte)
+    IF EXISTS (SELECT 1 FROM users WHERE email = p_email AND deleted_at IS NULL) THEN
+        RAISE EXCEPTION 'L''adresse email % est déjà associée à un compte actif.', p_email;
+    END IF;
+
+    -- 2. Insertion de l'utilisateur avec validation forcée des CGU (Horodatage synchrone)
+    INSERT INTO users (
+        email, 
+        password_hash, 
+        business_name, 
+        user_group, 
+        cgu_accepted_at
+    ) VALUES (
+        LOWER(TRIM(p_email)), -- Normalisation pour éviter les contournements par casse (ex: Test@Test.com)
+        p_password_hash, 
+        p_business_name, 
+        p_user_group, 
+        NOW() -- L'acceptation des CGU est datée immédiatement à l'inscription
+    )
+    RETURNING id INTO v_user_id;
+
+    -- 3. Attribution optionnelle d'un droit d'accès initial (ex: Rôles de gestion)
+    IF p_access_code IS NOT NULL THEN
+        -- On récupère l'identifiant interne du privilège
+        SELECT id INTO v_access_id FROM access WHERE code = p_access_code;
+        
+        -- Si le code d'accès existe, on effectue l'association dans la table de liaison
+        IF v_access_id IS NOT NULL THEN
+            INSERT INTO user_access (user_id, access_id) 
+            VALUES (v_user_id, v_access_id);
+        ELSE
+            RAISE NOTICE 'Le code d''accès % n''existe pas. L''utilisateur a été créé sans privilèges.', p_access_code;
+        END IF;
+    END IF;
+
+    -- Renvoie l'ID pour permettre à l'API de construire sa réponse (ex: CreatedAtAction / HTTP 201)
+    RETURN v_user_id;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION sp_load_users_ram()
 RETURNS TABLE (
     id BIGINT,
@@ -114,8 +166,8 @@ BEGIN
         password_hash = 'GDPR_ANONYMIZED',
         is_active = FALSE,
         user_group = NULL,
-        deleted_by = p_deleted_by_id, -- Enregistrement de l'auteur de la suppression
-        deleted_at = NOW()             -- Le trigger 'set_timestamp_users' mettra aussi à jour 'updated_at'
+        deleted_by = p_deleted_by_id,
+        deleted_at = NOW()              -- Le trigger 'set_timestamp_users' mettra aussi à jour 'updated_at'
     WHERE id = p_user_id 
       AND deleted_at IS NULL;
 
