@@ -123,7 +123,7 @@ public static class ApplicationSetup
     private static readonly string[] ALLOWED_HEADERS = ["Content-Type", "Authorization"];
     private static readonly string[] ALLOWED_METHODS = ["GET"]; // Uniquement du GET (Ex: catalogue public)
 
-    private static readonly IEnumerable<string> CROMPRESSED_MIME_TYPES = ResponseCompressionDefaults.MimeTypes.Concat(["application/json"]);
+    private static readonly IEnumerable<string> COMPRESSED_MIME_TYPES = ResponseCompressionDefaults.MimeTypes.Concat(["application/json"]);
     
     public static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
     {
@@ -152,7 +152,7 @@ public static class ApplicationSetup
         {
             options.EnableForHttps = true;
             options.Providers.Add<GzipCompressionProvider>();
-            options.MimeTypes = CROMPRESSED_MIME_TYPES;
+            options.MimeTypes = COMPRESSED_MIME_TYPES;
         });
 
         builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
@@ -208,7 +208,7 @@ public static class ApplicationSetup
 
         // 5. Couches de sécurité applicatives (Qui tu es, puis ce que tu as le droit de faire)        app.UseAuthentication();
         app.UseAuthentication();        // Qui tu es
-        app.UseAuthorization();         // tes droitq
+        app.UseAuthorization();         // tes droits
 
         // 6. Mapping des routes
         app.MapControllers();
