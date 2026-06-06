@@ -15,12 +15,7 @@ namespace CollectorShopApi;
 #region ConfigurationCache
 public record ConfigurationResponse(string Version, IReadOnlyDictionary<string, object> Features);
 
-public interface IConfigurationCache
-{
-    ConfigurationResponse GetCurrent();
-}
-
-public class ConfigurationCache : IConfigurationCache, IDisposable
+public class ConfigurationCache : IDisposable
 {
     private readonly IConfiguration _config;
     private readonly IDisposable? _changeTokenSubscription;
@@ -117,7 +112,6 @@ public class ConfigurationCache : IConfigurationCache, IDisposable
 }
 #endregion
 
-
 #region StartUp
 public static class ApplicationSetup
 {
@@ -134,7 +128,7 @@ public static class ApplicationSetup
     public static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
     {
 
-        builder.Services.AddSingleton<IConfigurationCache, ConfigurationCache>();
+        builder.Services.AddSingleton<ConfigurationCache>();
 
         builder.Services.AddSingleton<PgDbConnectionFactory>();
 
@@ -220,7 +214,7 @@ public static class ApplicationSetup
         app.MapControllers();
 
         // Endpoint technique de configuration dynamique
-        app.MapGet("/configuration", ([FromServices] IConfigurationCache cache) => Results.Ok(cache.GetCurrent()));
+        app.MapGet("/configuration", ([FromServices] ConfigurationCache cache) => Results.Ok(cache.GetCurrent()));
 
         // Route pour recharger UNIQUEMENT la brique utilisateur à chaud (Ex: après modif SQL)
         app.MapPost("/infra/cache/refresh/users", ([FromServices] IGlobalCache cache) =>
