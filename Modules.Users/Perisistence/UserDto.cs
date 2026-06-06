@@ -1,11 +1,8 @@
-﻿using Collector.Shared.Infrastructure;
-using Collector.Shared.Infrastructure.Ram.Persistence;
-using System.Data;
-using System.Text;
+﻿using Shared.Infrastructure.Ram.Persistence;
 
-namespace Users.Infra.Persistence;
+namespace Modules.Users.Perisistence;
 
-// <summary>
+/// <summary>
 /// DTO Auto-mappé : Lié de manière isomorphe au contrat de la procédure stockée
 /// </summary>
 public record UserDto
@@ -15,7 +12,6 @@ public record UserDto
     public string Email { get; init; }
     public bool IsActive { get; init; }
 
-    // Le constructeur prend le DataRow et peuple les propriétés "init"
     public UserDto(UserRam userRam)
     {
         Id = userRam.Id;

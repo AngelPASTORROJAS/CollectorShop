@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using Npgsql;
 
-namespace Collector.Shared.Infrastructure;
+namespace Shared.Infrastructure.PostgreSql;
 
 public class PgSqlQuery : IDisposable
 {

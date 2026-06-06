@@ -1,7 +1,8 @@
 ﻿using System.Data;
-using Collector.Shared.Infrastructure;
+using Shared.Infrastructure.PostgreSql;
+using Shared.Kernel;
 
-namespace Trading.Infra.Persistence;
+namespace Modules.Finance.Persistence;
 
 /// <summary>
 /// Entité de reçu transactionnel, liée de manière isomorphe au contrat d'audit SQL

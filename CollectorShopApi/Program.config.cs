@@ -1,14 +1,14 @@
-﻿using Collector.Shared.Infrastructure;
-using Collector.Shared.Infrastructure.Ram;
-using Collectors.Infra.Persistence;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
-using Scalar.AspNetCore;
 using System.IO.Compression;
-using Trading.Infra.Persistence;
-using Users.Infra.Persistence;
+using Scalar.AspNetCore;
+using Shared.Infrastructure.PostgreSql;
+using Shared.Infrastructure.Ram;
+using Modules.Finance.Persistence;
+using Modules.Collector.Persistence;
+using Modules.Users.Perisistence;
 
 namespace CollectorShopApi;
 
@@ -129,17 +129,15 @@ public static class ApplicationSetup
     {
 
         builder.Services.AddSingleton<ConfigurationCache>();
-
         builder.Services.AddSingleton<PgDbConnectionFactory>();
 
         // ENREGISTREMENT DU CACHE GLOBAL EN RAM 
         builder.Services.AddSingleton<IGlobalCache, GlobalCacheService>();
 
         // Repositories ADO.NET (En mode Transient ou Scoped, au choix, ici Transient car ils n'ont pas d'état)
-        builder.Services.AddTransient<SqlUserRepository>();
-        builder.Services.AddTransient<SqlCollectorRepository>();
-        builder.Services.AddTransient<SqlTradingRepository>();
-
+        builder.Services.AddTransient<UsersRepository>();
+        builder.Services.AddTransient<FinanceRepository>();
+        builder.Services.AddTransient<CollectorRepository>();
 
         builder.Services.AddCors(options => {
             options.AddDefaultPolicy(policy => policy

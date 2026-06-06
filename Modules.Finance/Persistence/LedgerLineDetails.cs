@@ -1,4 +1,6 @@
-﻿namespace Trading.Infra.Persistence;
+﻿using Shared.Kernel;
+
+namespace Modules.Finance.Persistence;
 
 /// <summary>
 /// Modèle d'entité structuré représentant le détail complet d'une transaction avec ses écritures comptables

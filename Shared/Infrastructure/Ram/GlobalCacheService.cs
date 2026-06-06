@@ -1,8 +1,9 @@
-﻿using Collector.Shared.Infrastructure.Ram.Persistence;
+﻿using Shared.Infrastructure.PostgreSql;
+using Shared.Infrastructure.Ram.Persistence;
 using System.Collections.Frozen;
 using System.Data;
 
-namespace Collector.Shared.Infrastructure.Ram;
+namespace Shared.Infrastructure.Ram;
 
 public interface IGlobalCache
 {
@@ -102,7 +103,7 @@ public class GlobalCacheService : IGlobalCache
         }
 
         // 2. Récupération de la référence actuelle du Store pour préserver les AUTRES dictionnaires
-        var oldStore = _currentStore;
+        GlobalDataStore oldStore = _currentStore;
 
         // 3. Construction d'une nouvelle instance du Store combinant le neuf et l'ancien
         var newStore = new GlobalDataStore

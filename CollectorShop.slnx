@@ -1,17 +1,11 @@
 <Solution>
-  <Folder Name="/01_Presentation/">
-    <Project Path="CollectorShopApi/CollectorShopApi.csproj" />
-  </Folder>
-  <Folder Name="/04_Infrastructure/">
-    <Project Path="04_Infrastructure/Collector.Shared.Infrastructure/Collector.Shared.Infrastructure.csproj" Id="0f658a76-b2f0-4705-8a36-59bfca5f37f9" />
-    <Project Path="04_Infrastructure/Collectors.Infra/Collectors.Infra.csproj" Id="1b04eb90-dbc4-497d-b7b6-76d3e59aee5b" />
-    <Project Path="04_Infrastructure/Trading.Infra/Trading.Infra.csproj" Id="88d9c0f3-7ac3-4928-b3d5-92adb9313463" />
-    <Project Path="04_Infrastructure/Users.Infra/Users.Infra.csproj" Id="65c6ec3f-9e05-4481-9fdd-c002ab2f973d" />
-  </Folder>
-  <Folder Name="/05_DataBase/">
-    <Project Path="05_Database/DataBasePostgreSql/DataBasePostgreSql.csproj" Id="77f69d98-ce4a-4c68-b153-c728ff92dc6b" />
-  </Folder>
+  <Project Path="05_Database/DataBasePostgreSql/DataBasePostgreSql.csproj" Id="77f69d98-ce4a-4c68-b153-c728ff92dc6b" />
+  <Project Path="CollectorShopApi/CollectorShopApi.csproj" />
   <Project Path="docker-compose.dcproj">
     <Build />
   </Project>
+  <Project Path="Modules.Collector/Modules.Collector.csproj" Id="c52580aa-9238-41a5-8f28-dc7eca3055f1" />
+  <Project Path="Modules.Finance/Modules.Finance.csproj" Id="61002fc7-d26a-460a-8f6e-57f3a56b4988" />
+  <Project Path="Modules.Users/Modules.Users.csproj" Id="dafc40ea-8e1b-4e97-b3c2-c7d81e8aa058" />
+  <Project Path="Shared/Shared.csproj" Id="047d5c2e-8c8a-4014-a7f2-4feb923e1fe0" />
 </Solution>

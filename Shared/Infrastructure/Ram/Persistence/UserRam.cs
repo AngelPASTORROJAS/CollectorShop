@@ -1,6 +1,7 @@
-﻿using System.Data;
+﻿using Shared.Infrastructure.PostgreSql;
+using System.Data;
 
-namespace Collector.Shared.Infrastructure.Ram.Persistence;
+namespace Shared.Infrastructure.Ram.Persistence;
 
 public record UserRam
 {

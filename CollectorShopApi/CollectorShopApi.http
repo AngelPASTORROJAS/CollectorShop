@@ -10,15 +10,6 @@ GET {{CollectorShopApi_HostAddress_http}}/openapi/v1.json
 GET {{CollectorShopApi_HostAddress_http}}/configuration/
 ###
 
-GET {{CollectorShopApi_HostAddress_http}}/weatherforecast/
-Accept: application/json
-###
-
-GET {{CollectorShopApi_HostAddress_https}}/weatherforecast/
-Accept: application/json
-
-###
-
 GET {{CollectorShopApi_HostAddress_https}}/api/users/0
 Accept: application/json
 

@@ -1,4 +1,4 @@
-﻿namespace Trading.Infra.Persistence;
+﻿namespace Shared.Kernel;
 
 public enum TransactionStatus
 {

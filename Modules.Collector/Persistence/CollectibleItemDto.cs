@@ -1,7 +1,7 @@
-﻿using System.Data;
-using Collector.Shared.Infrastructure;
+﻿using Shared.Infrastructure.PostgreSql;
+using System.Data;
 
-namespace Collectors.Infra.Persistence;
+namespace Modules.Collector.Persistence;
 
 /// <summary>
 /// DTO de transfert pour le catalogue, lié de manière isomorphe à sp_get_collectible_item_by_id

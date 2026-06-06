@@ -1,19 +1,16 @@
-﻿using Collector.Shared.Infrastructure;
-using Collector.Shared.Infrastructure.Ram;
-using Collector.Shared.Infrastructure.Ram.Persistence;
-using Npgsql;
+﻿using Shared.Infrastructure.Ram;
+using Shared.Infrastructure.Ram.Persistence;
+using Shared.Infrastructure.PostgreSql;
 
-namespace Users.Infra.Persistence;
+namespace Modules.Users.Perisistence;
 
-public class SqlUserRepository(IGlobalCache globalCache)
+public class UsersRepository(IGlobalCache globalCache)
 {
-    private const string SpEditEmail = "sp_edit_user_email";
-
     public UserDto? GetUserById(long userId)
     {
         var data = globalCache.GetUserById(userId);
-        if(data == null) return null;
-        
+        if (data == null) return null;
+
         return new UserDto(data);
     }
 
@@ -26,7 +23,7 @@ public class SqlUserRepository(IGlobalCache globalCache)
         try
         {
             // 2. Écriture physique en Base de données (Léger via ExecuteNonQuery)
-            var query = PgSqlQuery.Users(SpEditEmail, [ new ("@p_user_id", targetUserId), new ("@p_user_email", newEmail) ]);
+            var query = PgSqlQuery.Users("sp_edit_user_email", [new("@p_user_id", targetUserId), new("@p_user_email", newEmail)]);
             query.ExecuteNonQuery();
 
             // 3. Mutation par copie immuable de l'objet RAM avec le nouvel email

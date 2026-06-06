@@ -2,7 +2,7 @@
 using Npgsql;
 using System.Data;
 
-namespace Collector.Shared.Infrastructure;
+namespace Shared.Infrastructure.PostgreSql;
 
 public class PgDbConnectionFactory(IConfiguration configuration)
 {

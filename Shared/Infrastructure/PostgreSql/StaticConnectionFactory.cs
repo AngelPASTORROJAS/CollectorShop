@@ -1,4 +1,4 @@
-﻿namespace Collector.Shared.Infrastructure;
+﻿namespace Shared.Infrastructure.PostgreSql;
 
 public static class StaticConnectionFactory
 {

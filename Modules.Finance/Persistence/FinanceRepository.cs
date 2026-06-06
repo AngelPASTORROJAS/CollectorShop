@@ -1,14 +1,11 @@
-﻿using Npgsql;
+﻿using Shared.Infrastructure.PostgreSql;
+using Shared.Kernel;
 using System.Data;
-using Collector.Shared.Infrastructure;
 
-namespace Trading.Infra.Persistence;
+namespace Modules.Finance.Persistence;
 
-public class SqlTradingRepository
+public class FinanceRepository
 {
-    // Centralisation des noms des procédures stockées de DbFinance
-    private const string SpProcessTrade = "sp_process_trade";
-    private const string SpGetTransactionWithLedger = "sp_get_transaction_with_ledger";
 
     /// <summary>
     /// Exécute de manière atomique un achat, prélève la commission et alimente le Ledger.
@@ -16,7 +13,7 @@ public class SqlTradingRepository
     public long ProcessTrade(long buyerId, long sellerId, long itemId, decimal grossAmount, CurrencyType currency = CurrencyType.EUR)
     {
         // 1. Utilisation du nouveau ExecuteNonQuery car c'est une commande d'écriture
-        var query = PgSqlQuery.Finance(SpProcessTrade,[
+        var query = PgSqlQuery.Finance("sp_process_trade", [
                 new ("@p_buyer_id", buyerId),
                 new ("@p_seller_id", sellerId),
                 new ("@p_item_id", itemId),
@@ -40,45 +37,19 @@ public class SqlTradingRepository
     /// <summary>
     /// Récupère une transaction et l'ensemble de ses lignes comptables associées pour l'audit et la BI.
     /// </summary>
-    public List<TransactionLedgerEntity> GetTransactionWithLedger(long transactionId)
+    public async Task<List<TransactionLedgerEntity>> GetTransactionWithLedger(long transactionId)
     {
-        var list = new List<TransactionLedgerEntity>();
-
-        var query = PgSqlQuery.Finance(SpGetTransactionWithLedger, [ new ("@p_transaction_id", transactionId) ]);
-
-        var table = query.ExecuteAsDataTable();
-
-        if (table == null || table.Rows.Count == 0)
-            return list;
-
-        foreach (DataRow row in table.Rows)
-        {
-            list.Add(new TransactionLedgerEntity(row));
-        }
-
-        return list;
+        return await PgSqlQuery.Finance("sp_get_transaction_with_ledger", [new("@p_transaction_id", transactionId)])
+            .ExecuteAsListAsync(row => new TransactionLedgerEntity(row));
     }
 
     /// <summary>
     /// Récupère l'historique léger des transactions d'un utilisateur
     /// </summary>
-    public List<TransactionEntity> GetTransactionHistoryByUserId(long userId)
+    public async Task<List<TransactionEntity>> GetTransactionHistoryByUserIdAsync(long userId)
     {
-        var list = new List<TransactionEntity>();
-
-        var query = PgSqlQuery.Finance("sp_get_user_transactions_history", [ new ("@p_user_id", userId) ]);
-
-        var table = query.ExecuteAsDataTable();
-
-        if (table == null || table.Rows.Count == 0)
-            return list;
-
-        foreach (DataRow row in table.Rows)
-        {
-            list.Add(new TransactionEntity(row));
-        }
-
-        return list;
+        return await PgSqlQuery.Finance("sp_get_user_transactions_history", [new("@p_user_id", userId)])
+            .ExecuteAsListAsync(row => new TransactionEntity(row));
     }
 
     /// <summary>
@@ -86,7 +57,7 @@ public class SqlTradingRepository
     /// </summary>
     public TransactionDetailsEntity? GetTransactionDetails(long transactionId)
     {
-        var query = PgSqlQuery.Finance(SpGetTransactionWithLedger, [ new ("@p_transaction_id", transactionId) ]);
+        var query = PgSqlQuery.Finance("sp_get_transaction_with_ledger", [new("@p_transaction_id", transactionId)]);
 
         var table = query.ExecuteAsDataTable();
 

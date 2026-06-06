@@ -1,7 +1,7 @@
 ﻿using System.Collections.Frozen;
-using Collector.Shared.Infrastructure.Ram.Persistence;
+using Shared.Infrastructure.Ram.Persistence;
 
-namespace Collector.Shared.Infrastructure.Ram;
+namespace Shared.Infrastructure.Ram;
 
 /// <summary>
 /// Conteneur immuable des données globales chargées en RAM.

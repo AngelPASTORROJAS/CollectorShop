@@ -1,7 +1,8 @@
 ﻿using System.Data;
-using Collector.Shared.Infrastructure;
+using Shared.Kernel;
+using Shared.Infrastructure.PostgreSql;
 
-namespace Trading.Infra.Persistence;
+namespace Modules.Finance.Persistence;
 
 public record TransactionLedgerEntity
 {
