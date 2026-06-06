@@ -2,9 +2,9 @@
 
 public static class StaticConnectionFactory
 {
-    public static IDbConnectionFactory? Instance { get; private set; }
+    public static PgDbConnectionFactory? Instance { get; private set; }
 
-    public static void Initialize(IDbConnectionFactory factory)
+    public static void Initialize(PgDbConnectionFactory factory)
     {
         Instance = factory;
     }

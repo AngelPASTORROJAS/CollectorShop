@@ -7,7 +7,7 @@ public class PgSqlQuery : IDisposable
 {
     private readonly NpgsqlTransaction? _transaction;
 
-    public string TargetDatabase { get; set; } = "Collector";
+    public string TargetDatabase { get; set; } = PgDbConnectionFactory.DbCollector;
     public string SqlText { get; set; }
     public List<NpgsqlParameter> Parameters { get; set; } = [];
     public int CommandTimeout { get; set; } = -1;

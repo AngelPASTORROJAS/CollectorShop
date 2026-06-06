@@ -136,7 +136,7 @@ public static class ApplicationSetup
 
         builder.Services.AddSingleton<IConfigurationCache, ConfigurationCache>();
 
-        builder.Services.AddSingleton<IDbConnectionFactory, PgDbConnectionFactory>();
+        builder.Services.AddSingleton<PgDbConnectionFactory>();
 
         // ENREGISTREMENT DU CACHE GLOBAL EN RAM 
         builder.Services.AddSingleton<IGlobalCache, GlobalCacheService>();
@@ -237,7 +237,7 @@ public static class ApplicationSetup
         });
 
         // 1. Initialisation de la factory statique pour ADO.NET
-        var factory = app.Services.GetRequiredService<IDbConnectionFactory>();
+        var factory = app.Services.GetRequiredService<PgDbConnectionFactory>();
         StaticConnectionFactory.Initialize(factory);
 
         // 2. PRE-CHARGEMENT DES DONNÉES CRITIQUES EN RAM AU DÉMARRAGE

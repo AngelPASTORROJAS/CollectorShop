@@ -4,19 +4,14 @@ using System.Data;
 
 namespace Collector.Shared.Infrastructure;
 
-public class PgDbConnectionFactory : IDbConnectionFactory
+public class PgDbConnectionFactory(IConfiguration configuration)
 {
-    // Centralisation des bases de données de l'infrastructure
+    private readonly IConfiguration _configuration = configuration;
+
     public const string DbUsers = "users";
     public const string DbCollector = "collector";
     public const string DbFinance = "finance";
 
-    private readonly IConfiguration _configuration;
-
-    public PgDbConnectionFactory(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
 
     public IDbConnection CreateOpenConnection(string targetDatabase)
     {
