@@ -5,32 +5,79 @@ namespace Collector.Shared.Infrastructure;
 
 public class PgSqlQuery : IDisposable
 {
-    private readonly IDbConnectionFactory? _connectionFactory;
     private readonly NpgsqlTransaction? _transaction;
 
-    public string TargetDatabase { get; set; } = "Collector"; // Base par défaut
+    public string TargetDatabase { get; set; } = "Collector";
     public string SqlText { get; set; }
     public List<NpgsqlParameter> Parameters { get; set; } = [];
     public int CommandTimeout { get; set; } = -1;
     public bool AutoThrowException { get; set; } = true;
     public Exception? LastException { get; private set; }
 
-    // Constructeur 1 : Requête simple (on précise la base cible)
+    // Constructeur de base principal
     public PgSqlQuery(string targetDatabase, string sqlText, List<NpgsqlParameter>? parameters = null)
     {
-        // Récupération de la factory via l'injection (on verra son utilisation)
         TargetDatabase = targetDatabase;
         SqlText = sqlText;
         if (parameters != null) Parameters = parameters;
     }
 
-    // Constructeur 2 : Mode Transactionnel (partage la connexion de la transaction)
-    public PgSqlQuery(NpgsqlTransaction transaction, string sqlText, List<NpgsqlParameter>? parameters = null)
+    // Constructeur pour le mode Transactionnel
+    public PgSqlQuery(string targetDatabase, NpgsqlTransaction transaction, string sqlText, List<NpgsqlParameter>? parameters = null)
     {
+        TargetDatabase = targetDatabase;
         _transaction = transaction;
         SqlText = sqlText;
         if (parameters != null) Parameters = parameters;
     }
+
+    #region Factory Methods
+    public static PgSqlQuery Collector(string sqlText, List<NpgsqlParameter>? parameters = null)
+        => new(PgDbConnectionFactory.DbCollector, sqlText, parameters);
+
+    public static PgSqlQuery Finance(string sqlText, List<NpgsqlParameter>? parameters = null)
+        => new(PgDbConnectionFactory.DbFinance, sqlText, parameters);
+
+    public static PgSqlQuery Users(string sqlText, List<NpgsqlParameter>? parameters = null)
+        => new(PgDbConnectionFactory.DbUsers, sqlText, parameters);
+
+    public static PgSqlQuery TransactionCollector(NpgsqlTransaction transaction, string sqlText, List<NpgsqlParameter>? parameters = null)
+        => new PgSqlQuery(PgDbConnectionFactory.DbCollector, transaction, sqlText, parameters);
+
+    public static PgSqlQuery TransactionFinance(NpgsqlTransaction transaction, string sqlText, List<NpgsqlParameter>? parameters = null)
+        => new PgSqlQuery(PgDbConnectionFactory.DbFinance, transaction, sqlText, parameters);
+
+    public static PgSqlQuery TransactionUsers(NpgsqlTransaction transaction, string sqlText, List<NpgsqlParameter>? parameters = null)
+        => new PgSqlQuery(PgDbConnectionFactory.DbUsers, transaction, sqlText, parameters);
+    #endregion
+
+    #region Features
+    /// <summary>
+    /// Exécute et mappe la première ligne du DataTable vers un DTO unique (ex: GetById)
+    /// </summary>
+    public async Task<T?> ExecuteAsSingleObjectAsync<T>(Func<DataRow, T> mapper) where T : class
+    {
+        var dt = await ExecuteAsDataTableAsync();
+        if (dt == null || dt.Rows.Count == 0) return null;
+        return mapper(dt.Rows[0]);
+    }
+
+    /// <summary>
+    /// Exécute et mappe toutes les lignes du DataTable vers une liste de DTOs
+    /// </summary>
+    public async Task<List<T>> ExecuteAsListAsync<T>(Func<DataRow, T> mapper)
+    {
+        var list = new List<T>();
+        var dt = await ExecuteAsDataTableAsync();
+        if (dt == null) return list;
+
+        foreach (DataRow row in dt.Rows)
+        {
+            list.Add(mapper(row));
+        }
+        return list;
+    }
+    #endregion
 
     private NpgsqlCommand GetCommand(NpgsqlConnection explicitConnection)
     {
@@ -40,7 +87,6 @@ public class PgSqlQuery : IDisposable
         if (_transaction != null)
             command.Transaction = _transaction;
 
-        // Détection automatique du type (si pas d'espace, c'est une procédure/fonction stockée)
         if (!SqlText.Trim().Contains(' '))
             command.CommandType = CommandType.StoredProcedure;
 
@@ -64,23 +110,17 @@ public class PgSqlQuery : IDisposable
 
         try
         {
-            // Si on est dans une transaction, on réutilise sa connexion, sinon on en ouvre une dédiée via la Factory
-            if (_transaction != null)
-            {
-                connection = _transaction.Connection;
-            }
+            if (_transaction != null) connection = _transaction.Connection;
             else
             {
                 if (StaticConnectionFactory.Instance == null)
                     throw new InvalidOperationException("StaticConnectionFactory non initialisé.");
-
                 connection = (NpgsqlConnection)StaticConnectionFactory.Instance.CreateOpenConnection(TargetDatabase);
             }
 
             command = GetCommand(connection);
-
             using var reader = command.ExecuteReader();
-            dataTable.Load(reader); // Remplace avantageusement le DataAdapter sous PostgreSQL
+            dataTable.Load(reader);
         }
         catch (Exception ex)
         {
@@ -91,20 +131,15 @@ public class PgSqlQuery : IDisposable
         finally
         {
             command?.Dispose();
-            // On ne ferme la connexion QUE si on n'est pas dans une transaction globale
             if (_transaction == null && connection != null)
             {
                 connection.Close();
                 connection.Dispose();
             }
         }
-
         return dataTable;
     }
 
-    /// <summary>
-    /// Version Asynchrone pour les performances de l'API sous haute charge
-    /// </summary>
     public async Task<DataTable?> ExecuteAsDataTableAsync()
     {
         NpgsqlConnection? connection = null;
@@ -113,20 +148,15 @@ public class PgSqlQuery : IDisposable
 
         try
         {
-            if (_transaction != null)
-            {
-                connection = _transaction.Connection;
-            }
+            if (_transaction != null) connection = _transaction.Connection;
             else
             {
                 if (StaticConnectionFactory.Instance == null)
                     throw new InvalidOperationException("StaticConnectionFactory non initialisé.");
-
                 connection = (NpgsqlConnection)StaticConnectionFactory.Instance.CreateOpenConnection(TargetDatabase);
             }
 
             command = GetCommand(connection);
-
             using var reader = await command.ExecuteReaderAsync();
             dataTable.Load(reader);
         }
@@ -145,7 +175,6 @@ public class PgSqlQuery : IDisposable
                 await connection.DisposeAsync();
             }
         }
-
         return dataTable;
     }
 
@@ -160,20 +189,16 @@ public class PgSqlQuery : IDisposable
 
         try
         {
-            if (_transaction != null)
-            {
-                connection = _transaction.Connection;
-            }
+            if (_transaction != null) connection = _transaction.Connection;
             else
             {
                 if (StaticConnectionFactory.Instance == null)
                     throw new InvalidOperationException("StaticConnectionFactory non initialisé.");
-
                 connection = (NpgsqlConnection)StaticConnectionFactory.Instance.CreateOpenConnection(TargetDatabase);
             }
 
             command = GetCommand(connection);
-            return command.ExecuteNonQuery(); // Léger, rapide, zéro allocation inutile
+            return command.ExecuteNonQuery();
         }
         catch (Exception ex)
         {
@@ -192,9 +217,6 @@ public class PgSqlQuery : IDisposable
         }
     }
 
-    /// <summary>
-    /// Version asynchrone performante de ExecuteNonQuery
-    /// </summary>
     public async Task<int> ExecuteNonQueryAsync()
     {
         NpgsqlConnection? connection = null;
@@ -202,15 +224,11 @@ public class PgSqlQuery : IDisposable
 
         try
         {
-            if (_transaction != null)
-            {
-                connection = _transaction.Connection;
-            }
+            if (_transaction != null) connection = _transaction.Connection;
             else
             {
                 if (StaticConnectionFactory.Instance == null)
                     throw new InvalidOperationException("StaticConnectionFactory non initialisé.");
-
                 connection = (NpgsqlConnection)StaticConnectionFactory.Instance.CreateOpenConnection(TargetDatabase);
             }
 
@@ -234,5 +252,8 @@ public class PgSqlQuery : IDisposable
         }
     }
 
-    public void Dispose() { }
+    public void Dispose()
+    {
+        Parameters?.Clear();
+    }
 }

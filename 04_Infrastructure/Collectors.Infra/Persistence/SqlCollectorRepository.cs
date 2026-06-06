@@ -11,10 +11,7 @@ public class SqlCollectorRepository
     public CollectibleItemDto? GetItemById(Guid itemId)
     {
         // 1. On pointe cette fois-ci sur "DbCollector" (qui résout le port 5433 en tâche de fond)
-        var query = new PgSqlQuery(PgDbConnectionFactory.DbCollector, SpGetCollectibleItemById)
-        {
-            Parameters = [new NpgsqlParameter("@p_item_id", itemId)]
-        };
+        var query = PgSqlQuery.Collector(SpGetCollectibleItemById, [ new ("@p_item_id", itemId) ]);
 
         // 2. Récupération des données du catalogue
         var table = query.ExecuteAsDataTable();

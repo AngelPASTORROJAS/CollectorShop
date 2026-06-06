@@ -86,10 +86,8 @@ public class GlobalCacheService : IGlobalCache
     public void RefreshUsers()
     {
         // 1. Extraction brute via le standard PgSqlQuery et DataTable
-        var query = new PgSqlQuery(PgDbConnectionFactory.DbUsers, SpLoadUsersRam)
-        {
-            AutoThrowException = true
-        };
+        var query = PgSqlQuery.Users(SpLoadUsersRam);
+        query.AutoThrowException = true;
 
         var table = query.ExecuteAsDataTable();
         var userMap = new Dictionary<long, UserRam>();

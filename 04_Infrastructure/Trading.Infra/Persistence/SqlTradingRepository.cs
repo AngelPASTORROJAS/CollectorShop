@@ -16,16 +16,13 @@ public class SqlTradingRepository
     public long ProcessTrade(long buyerId, long sellerId, long itemId, decimal grossAmount, CurrencyType currency = CurrencyType.EUR)
     {
         // 1. Utilisation du nouveau ExecuteNonQuery car c'est une commande d'écriture
-        var query = new PgSqlQuery(PgDbConnectionFactory.DbFinance, SpProcessTrade)
-        {
-            Parameters = [
-                new NpgsqlParameter("@p_buyer_id", buyerId),
-                new NpgsqlParameter("@p_seller_id", sellerId),
-                new NpgsqlParameter("@p_item_id", itemId),
-                new NpgsqlParameter("@p_gross_amount", grossAmount),
-                new NpgsqlParameter("@p_currency", currency.ToString()) // Passage de l'enum en string pour l'encodage PG
-            ]
-        };
+        var query = PgSqlQuery.Finance(SpProcessTrade,[
+                new ("@p_buyer_id", buyerId),
+                new ("@p_seller_id", sellerId),
+                new ("@p_item_id", itemId),
+                new ("@p_gross_amount", grossAmount),
+                new ("@p_currency", currency.ToString()) // Passage de l'enum en string pour l'encodage PG
+            ]);
 
         // 2. Appel de ton enveloppe performante (Zéro allocation de DataTable)
         // Note : Si ton PgSqlQuery retourne le scalaire de la fonction, utilise-le, sinon passe par ExecuteAsDataTable.
@@ -47,12 +44,7 @@ public class SqlTradingRepository
     {
         var list = new List<TransactionLedgerEntity>();
 
-        var query = new PgSqlQuery(PgDbConnectionFactory.DbFinance, SpGetTransactionWithLedger)
-        {
-            Parameters = [
-                new NpgsqlParameter("@p_transaction_id", transactionId)
-            ]
-        };
+        var query = PgSqlQuery.Finance(SpGetTransactionWithLedger, [ new ("@p_transaction_id", transactionId) ]);
 
         var table = query.ExecuteAsDataTable();
 
@@ -74,12 +66,7 @@ public class SqlTradingRepository
     {
         var list = new List<TransactionEntity>();
 
-        var query = new PgSqlQuery(PgDbConnectionFactory.DbFinance, "sp_get_user_transactions_history")
-        {
-            Parameters = [
-                new NpgsqlParameter("@p_user_id", userId)
-            ]
-        };
+        var query = PgSqlQuery.Finance("sp_get_user_transactions_history", [ new ("@p_user_id", userId) ]);
 
         var table = query.ExecuteAsDataTable();
 
@@ -99,12 +86,7 @@ public class SqlTradingRepository
     /// </summary>
     public TransactionDetailsEntity? GetTransactionDetails(long transactionId)
     {
-        var query = new PgSqlQuery(PgDbConnectionFactory.DbFinance, SpGetTransactionWithLedger)
-        {
-            Parameters = [
-                new NpgsqlParameter("@p_transaction_id", transactionId)
-            ]
-        };
+        var query = PgSqlQuery.Finance(SpGetTransactionWithLedger, [ new ("@p_transaction_id", transactionId) ]);
 
         var table = query.ExecuteAsDataTable();
 
