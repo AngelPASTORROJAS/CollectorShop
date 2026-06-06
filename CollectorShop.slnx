@@ -1,6 +1,6 @@
 <Solution>
-  <Project Path="05_Database/DataBasePostgreSql/DataBasePostgreSql.csproj" Id="77f69d98-ce4a-4c68-b153-c728ff92dc6b" />
   <Project Path="CollectorShopApi/CollectorShopApi.csproj" />
+  <Project Path="DataBasePostgreSql/DataBasePostgreSql.csproj" />
   <Project Path="docker-compose.dcproj">
     <Build />
   </Project>

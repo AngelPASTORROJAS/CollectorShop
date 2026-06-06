@@ -2,7 +2,7 @@
 using Shared.Infrastructure.Ram.Persistence;
 using Shared.Infrastructure.PostgreSql;
 
-namespace Modules.Users.Perisistence;
+namespace Modules.Users.Persistence;
 
 public class UsersRepository(IGlobalCache globalCache)
 {

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Modules.Users.Perisistence;
+using Modules.Users.Persistence;
 
 namespace CollectorShopApi.Controllers;
 

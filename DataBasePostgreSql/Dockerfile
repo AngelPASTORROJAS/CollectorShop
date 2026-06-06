@@ -10,10 +10,10 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["05_Database/DataBasePostgreSql/DataBasePostgreSql.csproj", "05_Database/DataBasePostgreSql/"]
-RUN dotnet restore "./05_Database/DataBasePostgreSql/DataBasePostgreSql.csproj"
+COPY ["DataBasePostgreSql/DataBasePostgreSql.csproj", "DataBasePostgreSql/"]
+RUN dotnet restore "./DataBasePostgreSql/DataBasePostgreSql.csproj"
 COPY . .
-WORKDIR "/src/05_Database/DataBasePostgreSql"
+WORKDIR "/src/DataBasePostgreSql"
 RUN dotnet build "./DataBasePostgreSql.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Cette étape permet de publier le projet de service à copier dans la phase finale

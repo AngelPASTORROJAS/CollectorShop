@@ -8,7 +8,7 @@ using Shared.Infrastructure.PostgreSql;
 using Shared.Infrastructure.Ram;
 using Modules.Finance.Persistence;
 using Modules.Collector.Persistence;
-using Modules.Users.Perisistence;
+using Modules.Users.Persistence;
 
 namespace CollectorShopApi;
 
