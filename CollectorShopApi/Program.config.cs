@@ -9,6 +9,7 @@ using Shared.Infrastructure.Ram;
 using Modules.Finance.Persistence;
 using Modules.Collector.Persistence;
 using Modules.Users.Persistence;
+using Modules.Users.Features.Auth;
 
 namespace CollectorShopApi;
 
@@ -138,6 +139,9 @@ public static class ApplicationSetup
         builder.Services.AddTransient<UsersRepository>();
         builder.Services.AddTransient<FinanceRepository>();
         builder.Services.AddTransient<CollectorRepository>();
+
+        builder.Services.AddSingleton<SessionTokenManager>();
+        builder.Services.AddTransient<AuthService>();
 
         builder.Services.AddCors(options => {
             options.AddDefaultPolicy(policy => policy

@@ -39,6 +39,9 @@ services:
     environment:
       - ASPNETCORE_URLS=https://+:5001;http://+:5000
       - StorageSettings__StorageFolder=/app/user_documents
+      - Security__CookieName=CollectorShop_Auth_TK
+      - Security__JwtAudience=CollectorShop_SPA
+      - Security__JwtSecret=UneCleSuperSecrèteEtTresLonguePourLeHachageDuJwt123456!
     ports:
       - "5000:5000"
       - "5001:5001"
@@ -87,7 +90,7 @@ services:
       POSTGRES_PASSWORD: mypassword
       POSTGRES_DB: collector_db
     ports:
-      - "5433:5433"
+      - "5433:5432"
     volumes:
       - collector_postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -108,7 +111,7 @@ services:
       POSTGRES_PASSWORD: mypassword
       POSTGRES_DB: finance_db
     ports:
-      - "5434:5434"
+      - "5434:5432"
     volumes:
       - finance_postgres_data:/var/lib/postgresql/data
     healthcheck:

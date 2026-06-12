@@ -6,7 +6,7 @@ namespace Shared.Infrastructure.Ram.Persistence;
 public record UserRam
 {
     public long Id { get; init; }
-    public string Username { get; init; }
+    public string BusinessName { get; init; }
     public string Email { get; init; }
     public string? UserGroup { get; init; }
     public bool IsActive { get; init; }
@@ -20,7 +20,7 @@ public record UserRam
     public UserRam(DataRow row)
     {
         Id = row.GetLong("id") ?? 0L;
-        Username = row.GetString("business_name") ?? "";
+        BusinessName = row.GetString("business_name") ?? "";
         Email = row.GetString("email") ?? "";
         IsActive = row.GetBool("is_active");
         UserGroup = row.GetString("user_group");
