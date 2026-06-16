@@ -19,7 +19,11 @@ public class SessionTokenManager
         _cookieName = configuration["Security:CookieName"] ?? "CollectorDefaultSK_v1";
         _jwtAudience = configuration["Security:JwtAudience"] ?? "CollectorAudience";
         
-        string secret = configuration["Security:JwtSecret"] ?? "DEVELOPMENT_SECRET_KEY_DONT_USE_IN_PROD_123_COLLECTOR_SHOP!";
+        string secret = configuration["Security:JwtSecret"] ?? "";
+        if (string.IsNullOrEmpty(secret) || secret.Length < 32)
+        {
+            throw new InvalidOperationException("La clé JWT 'Security:JwtSecret' est absente ou trop faible pour la production !");
+        }
 
         _jwtSigningKey = Encoding.ASCII.GetBytes(secret);
     }
