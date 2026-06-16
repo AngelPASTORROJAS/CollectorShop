@@ -1,12 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Modules.Users.Features.Auth;
+using Modules.Users.Persistence;
 
 namespace CollectorShopApi.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(AuthService authService, SessionTokenManager tokenManager) : ControllerBase
+public class AuthController(AuthService authService, SessionTokenManager tokenManager, UsersRepository userRepository) : CollectorApiController
 {
+    private readonly UsersRepository _userRepository = userRepository;
+
     // Durée de validité du jeton et du cookie : 7 jours en secondes
     private const int OneWeekInSeconds = 7 * 24 * 3600;
 
@@ -52,5 +55,19 @@ public class AuthController(AuthService authService, SessionTokenManager tokenMa
         // Destruction instantanée du cookie de session
         tokenManager.ExpireCookie(HttpContext);
         return Ok(new { Message = "Déconnexion réussie." });
+    }
+
+
+    [HttpGet("me")]
+    public IActionResult GetMyUser()
+    {
+        var userDto = _userRepository.GetUserById(GetUserId);
+
+        if (userDto == null)
+        {
+            return Unauthorized();
+        }
+
+        return Ok(userDto);
     }
 }

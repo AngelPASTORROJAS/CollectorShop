@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Modules.Users.Features.Auth;
 using Modules.Users.Persistence;
 
 namespace CollectorShopApi.Controllers;
 
 [ApiController]
+[UserAuthAttribute]
 [Route("api/users")]
 public class UsersController(UsersRepository userRepository) : ControllerBase
 {
