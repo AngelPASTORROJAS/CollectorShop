@@ -31,8 +31,6 @@ public class GlobalCacheService : IGlobalCache
     }
 
     #region Users
-    private const string SpLoadUsersRam = "api_load_users_ram";
-
     /// <summary>
     /// Récupération instantanée en RAM d'un utilisateur par son ID (Lock-Free)
     /// </summary>
@@ -87,7 +85,7 @@ public class GlobalCacheService : IGlobalCache
     public void RefreshUsers()
     {
         // 1. Extraction brute via le standard PgSqlQuery et DataTable
-        using var query = PgSqlQuery.Users(SpLoadUsersRam);
+        using var query = PgSqlQuery.Users("api_load_users_ram");
         query.AutoThrowException = true;
 
         var table = query.ExecuteAsDataTable();
