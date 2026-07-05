@@ -5,17 +5,17 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Modules.Users.Features.Auth;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class UserAuthAttribute : Attribute, IAuthorizationFilter
+public class UserAuthAttribute : Attribute, IAsyncAuthorizationFilter
 {
-    public void OnAuthorization(AuthorizationFilterContext context)
+    public Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
         // On laisse passer les requêtes d'en-tête de sécurité CORS du navigateur
         if (context.HttpContext.Request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
-            return;
+        {
+            return Task.CompletedTask;
+        }
 
-        // Récupération du gestionnaire via le conteneur IoC de la requête
         var tokenManager = context.HttpContext.RequestServices.GetRequiredService<SessionTokenManager>();
-
         string? token = tokenManager.GetToken(context.HttpContext);
 
         if (!string.IsNullOrEmpty(token))
@@ -23,16 +23,17 @@ public class UserAuthAttribute : Attribute, IAuthorizationFilter
             var identity = tokenManager.DecodeJwtToken(token);
             if (identity is not null)
             {
-                var typeClaim = identity.Claims.FirstOrDefault(c => c.Type == "T")?.Value;
-                if (typeClaim == "G") // 'G' = GUI / Utilisateur Web Standard validé
+                var typeClaim = identity.Claims.FirstOrDefault(c => c.Type == tokenManager.TOKEN_KEY_TYPE)?.Value;
+                if (typeClaim == tokenManager.TOKEN_VALUE_TYPE)
                 {
                     context.HttpContext.User.AddIdentity(identity);
-                    return; // Accès accordé !
+                    return Task.CompletedTask; // Accès accordé !
                 }
             }
         }
 
         // Si pas de token ou token corrompu/expiré -> 401 Unauthorized direct
         context.Result = new UnauthorizedResult();
+        return Task.CompletedTask;
     }
 }

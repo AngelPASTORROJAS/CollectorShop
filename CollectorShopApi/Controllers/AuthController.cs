@@ -33,8 +33,8 @@ public class AuthController(AuthService authService, SessionTokenManager tokenMa
         // Préparation des métadonnées du badge d'accès (Claims)
         var claims = new List<KeyValuePair<string, string>>
         {
-            new("U", user!.Id.ToString()),
-            new("T", "G"), // 'G' pour GUI / Utilisateur standard
+            new(tokenManager.TOKEN_KEY_USERID, user!.Id.ToString()),
+            new(tokenManager.TOKEN_KEY_TYPE, tokenManager.TOKEN_VALUE_TYPE),
         };
 
         // 1. Génération du JWT signé cryptographiquement
