@@ -164,7 +164,9 @@ public static class ApplicationSetup
         
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddOpenApi();
+        builder.Services.AddOpenApiDocument(options => {
+            options.Title = "Collector Shop API";
+        });
 
         return builder;
     }
@@ -204,8 +206,11 @@ public static class ApplicationSetup
         // 5. OpenAPI (Swagger)
         if (app.Environment.IsDevelopment())
         {
-            app.MapOpenApi();
-            app.MapScalarApiReference();
+            app.UseOpenApi();
+            app.MapScalarApiReference(options =>
+            {
+                options.OpenApiRoutePattern = "/swagger/v1/swagger.json";
+            });
         }
 
         // 5. Couches de sécurité applicatives (Qui tu es, puis ce que tu as le droit de faire)        app.UseAuthentication();
