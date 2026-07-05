@@ -3,7 +3,7 @@
 namespace Modules.Users.Persistence;
 
 /// <summary>
-/// DTO Auto-mappé : Lié de manière isomorphe au contrat de la procédure stockée
+/// DTO Auto-mappé : Lié de manière isomorphe au contrat
 /// </summary>
 public record UserDto
 {

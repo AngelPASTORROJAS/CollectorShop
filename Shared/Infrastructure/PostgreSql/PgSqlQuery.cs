@@ -1,8 +1,9 @@
-﻿using System.Data;
-using Npgsql;
+﻿using Npgsql;
+using System.Data;
 
 namespace Shared.Infrastructure.PostgreSql;
 
+/* Pour des meilleurs performance en postgre si on fais des transactions on passe par des procédures stockés sinon par des fonctions. */
 public class PgSqlQuery : IDisposable
 {
     private readonly NpgsqlTransaction? _transaction;
@@ -13,6 +14,8 @@ public class PgSqlQuery : IDisposable
     public int CommandTimeout { get; set; } = -1;
     public bool AutoThrowException { get; set; } = true;
     public Exception? LastException { get; private set; }
+    public bool IsFunction { get; set; } = true;
+
 
     // Constructeur de base principal
     public PgSqlQuery(string targetDatabase, string sqlText, List<NpgsqlParameter>? parameters = null)
@@ -25,6 +28,7 @@ public class PgSqlQuery : IDisposable
     // Constructeur pour le mode Transactionnel
     public PgSqlQuery(string targetDatabase, NpgsqlTransaction transaction, string sqlText, List<NpgsqlParameter>? parameters = null)
     {
+        IsFunction = false;
         TargetDatabase = targetDatabase;
         _transaction = transaction;
         SqlText = sqlText;
@@ -79,22 +83,39 @@ public class PgSqlQuery : IDisposable
     }
     #endregion
 
-    private NpgsqlCommand GetCommand(NpgsqlConnection explicitConnection)
+
+    private NpgsqlCommand GetFunctionCommand(NpgsqlConnection explicitConnection)
     {
         var command = explicitConnection.CreateCommand();
-        command.CommandText = SqlText;
+        command.CommandType = CommandType.Text;
 
-        if (_transaction != null)
-            command.Transaction = _transaction;
-
-        if (!SqlText.Trim().Contains(' '))
-            command.CommandType = CommandType.StoredProcedure;
+        if (_transaction != null) command.Transaction = _transaction;
+        if (CommandTimeout != -1) command.CommandTimeout = CommandTimeout;
 
         foreach (var param in Parameters)
             command.Parameters.Add(param);
 
-        if (CommandTimeout != -1)
-            command.CommandTimeout = CommandTimeout;
+        var inputParams = Parameters.Where(p => p.Direction == ParameterDirection.Input || p.Direction == ParameterDirection.InputOutput).ToList();
+        var placeholders = string.Join(", ", inputParams.Select((_, index) => $"${index + 1}"));
+
+        command.CommandText = $"SELECT * FROM {SqlText.Trim()}({placeholders});";
+
+        return command;
+    }
+
+    private NpgsqlCommand GetProcedureCommand(NpgsqlConnection explicitConnection)
+    {
+        var command = explicitConnection.CreateCommand();
+        command.CommandText = SqlText.Trim();
+
+        if (_transaction != null) command.Transaction = _transaction;
+        if (CommandTimeout != -1) command.CommandTimeout = CommandTimeout;
+
+        foreach (var param in Parameters)
+            command.Parameters.Add(param);
+
+        if (!command.CommandText.Contains(' '))
+            command.CommandType = CommandType.StoredProcedure;
 
         return command;
     }
@@ -121,7 +142,8 @@ public class PgSqlQuery : IDisposable
                 connection = (NpgsqlConnection)StaticConnectionFactory.Instance.CreateOpenConnection(TargetDatabase);
             }
 
-            command = GetCommand(connection);
+            command = IsFunction ? GetFunctionCommand(connection) : GetProcedureCommand(connection);
+
             var reader = command.ExecuteReader();
             dataTable.Load(reader);
         }
@@ -162,7 +184,8 @@ public class PgSqlQuery : IDisposable
                 connection = (NpgsqlConnection)StaticConnectionFactory.Instance.CreateOpenConnection(TargetDatabase);
             }
 
-            command = GetCommand(connection);
+            command = IsFunction ? GetFunctionCommand(connection) : GetProcedureCommand(connection);
+            
             using var reader = await command.ExecuteReaderAsync();
             dataTable.Load(reader);
         }
@@ -206,7 +229,7 @@ public class PgSqlQuery : IDisposable
                 connection = (NpgsqlConnection)StaticConnectionFactory.Instance.CreateOpenConnection(TargetDatabase);
             }
 
-            command = GetCommand(connection);
+            command = IsFunction ? GetFunctionCommand(connection) : GetProcedureCommand(connection);
             return command.ExecuteNonQuery();
         }
         catch (Exception ex)
@@ -244,7 +267,7 @@ public class PgSqlQuery : IDisposable
                 connection = (NpgsqlConnection)StaticConnectionFactory.Instance.CreateOpenConnection(TargetDatabase);
             }
 
-            command = GetCommand(connection);
+            command = IsFunction ? GetFunctionCommand(connection) : GetProcedureCommand(connection);
             return await command.ExecuteNonQueryAsync();
         }
         catch (Exception ex)

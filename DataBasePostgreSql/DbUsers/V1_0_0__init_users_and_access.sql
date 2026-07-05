@@ -66,7 +66,7 @@ CREATE OR REPLACE TRIGGER set_timestamp_users
     EXECUTE FUNCTION trigger_set_timestamp();
 
 -- =========================================================================
--- MIGRATION : Procédures stockées
+-- MIGRATION : Fonctions
 -- =========================================================================
 
 CREATE OR REPLACE FUNCTION sp_create_user(

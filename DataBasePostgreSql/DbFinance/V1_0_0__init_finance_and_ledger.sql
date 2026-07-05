@@ -79,7 +79,7 @@ CREATE OR REPLACE TRIGGER set_timestamp_financial_transactions
 
 
 -- =========================================================================
--- Procédures stockées
+-- Fonctions
 -- =========================================================================
 
 CREATE OR REPLACE FUNCTION sp_process_trade(

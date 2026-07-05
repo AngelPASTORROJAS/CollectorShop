@@ -74,10 +74,10 @@ CREATE OR REPLACE TRIGGER set_timestamp_items
 
 
 -- =========================================================================
--- Procédures stockées (Stored Procedures)
+-- Fonctions
 -- =========================================================================
 
--- Procédure 1 : Chargement à chaud du catalogue actif en RAM (C#)
+-- 1. Chargement à chaud du catalogue actif en RAM (C#)
 CREATE OR REPLACE FUNCTION sp_load_catalog_ram()
 RETURNS TABLE (
     id BIGINT,
@@ -104,7 +104,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- Procédure 2 : Création d'un nouvel objet
+-- 2. Création d'un nouvel objet
 CREATE OR REPLACE FUNCTION sp_create_item(
     p_category_code VARCHAR(50),
     p_owner_id BIGINT,
@@ -145,7 +145,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- Procédure 3 : Suppression logique (Soft Delete) avec traçabilité de l'auteur
+-- 3. Suppression logique (Soft Delete) avec traçabilité de l'auteur
 CREATE OR REPLACE FUNCTION sp_soft_delete_item(
     p_item_id BIGINT,
     p_deleted_by_id BIGINT

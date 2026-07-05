@@ -1,5 +1,5 @@
-﻿-- Procedure d'inscription alignée sur la colonne business_name
-CREATE OR REPLACE PROCEDURE sp_register_user(
+﻿-- Inscription alignée sur la colonne business_name
+CREATE OR REPLACE FUNCTION sp_register_user(
     IN p_business_name VARCHAR(100),
     IN p_email VARCHAR(255),
     IN p_password_hash VARCHAR(500),
@@ -20,8 +20,8 @@ BEGIN
 END;
 $$;
 
--- Procédure de login
-CREATE OR REPLACE PROCEDURE sp_get_user_for_login(
+-- Login
+CREATE OR REPLACE FUNCTION sp_get_user_for_login(
     IN p_email VARCHAR(255),
     OUT p_id BIGINT,
     OUT p_business_name VARCHAR(100),
