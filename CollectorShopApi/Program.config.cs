@@ -69,6 +69,8 @@ public static class ApplicationSetup
             options.Title = "Collector Shop API";
         });
 
+        builder.Services.AddHealthChecks()
+            .AddCheck<PostgresHealthCheck>("PostgreSQL-Cluster");
         return builder;
     }
 
@@ -123,6 +125,8 @@ public static class ApplicationSetup
 
         // Endpoint technique de configuration dynamique
         app.MapGet("/configuration", ([FromServices] ConfigurationCache cache) => Results.Ok(cache.GetCurrent()));
+
+        app.MapHealthChecks("/health");
 
         // Route pour recharger UNIQUEMENT la brique utilisateur à chaud (Ex: après modif SQL)
         app.MapPost("/infra/cache/refresh/users", ([FromServices] IGlobalCache cache) =>

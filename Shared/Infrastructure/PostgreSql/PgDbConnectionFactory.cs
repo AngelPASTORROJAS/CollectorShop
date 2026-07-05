@@ -19,8 +19,8 @@ public class PgDbConnectionFactory(IConfiguration configuration)
         (string host, string port, string dbName) = targetDatabase.ToLower() switch
         {
             DbUsers => ("collectorshop-users-postgres", "5432", "users_db"),
-            DbCollector => ("collectorshop-collector-postgres", "5433", "collector_db"),
-            DbFinance => ("collectorshop-finance-postgres", "5434", "finance_db"),
+            DbCollector => ("collectorshop-collector-postgres", "5432", "collector_db"),
+            DbFinance => ("collectorshop-finance-postgres", "5432", "finance_db"),
             _ => throw new ArgumentException($"[Infrastructure Error] Base de données cible inconnue : {targetDatabase}")
         };
 
