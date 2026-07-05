@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Primitives;
 using System.IO.Compression;
 using Scalar.AspNetCore;
 using Shared.Infrastructure.PostgreSql;
