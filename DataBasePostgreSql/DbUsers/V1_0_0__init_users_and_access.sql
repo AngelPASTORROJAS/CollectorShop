@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS users (
     deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
 );
 
--- Index partiel pour maximiser les performances de sp_load_users_ram
+-- Index partiel pour maximiser les performances de api_load_users_ram
 CREATE INDEX IF NOT EXISTS idx_users_active_partial ON users(id) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_users_user_group ON users(user_group);
 
@@ -69,7 +69,7 @@ CREATE OR REPLACE TRIGGER set_timestamp_users
 -- MIGRATION : Fonctions
 -- =========================================================================
 
-CREATE OR REPLACE FUNCTION sp_create_user(
+CREATE OR REPLACE FUNCTION api_create_user(
     p_email VARCHAR(150),
     p_password_hash VARCHAR(255),
     p_business_name VARCHAR(100),
@@ -121,7 +121,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION sp_load_users_ram()
+CREATE OR REPLACE FUNCTION api_load_users_ram()
 RETURNS TABLE (
     id BIGINT,
     business_name VARCHAR(100),
@@ -150,7 +150,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION sp_soft_delete_user(
+CREATE OR REPLACE FUNCTION api_soft_delete_user(
     p_user_id BIGINT,
     p_deleted_by_id BIGINT
 )

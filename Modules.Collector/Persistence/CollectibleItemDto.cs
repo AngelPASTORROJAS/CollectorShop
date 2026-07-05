@@ -4,7 +4,7 @@ using System.Data;
 namespace Modules.Collector.Persistence;
 
 /// <summary>
-/// DTO de transfert pour le catalogue, lié de manière isomorphe à sp_get_collectible_item_by_id
+/// DTO de transfert pour le catalogue, lié de manière isomorphe à api_get_collectible_item_by_id
 /// </summary>
 public record CollectibleItemDto
 {

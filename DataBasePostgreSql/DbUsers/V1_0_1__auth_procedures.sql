@@ -1,5 +1,5 @@
 ﻿-- Inscription alignée sur la colonne business_name
-CREATE OR REPLACE FUNCTION sp_register_user(
+CREATE OR REPLACE FUNCTION api_register_user(
     IN p_business_name VARCHAR(100),
     IN p_email VARCHAR(255),
     IN p_password_hash VARCHAR(500),
@@ -21,7 +21,7 @@ END;
 $$;
 
 -- Login
-CREATE OR REPLACE FUNCTION sp_get_user_for_login(
+CREATE OR REPLACE FUNCTION api_get_user_for_login(
     IN p_email VARCHAR(255),
     OUT p_id BIGINT,
     OUT p_business_name VARCHAR(100),

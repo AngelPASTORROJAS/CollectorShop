@@ -78,7 +78,7 @@ CREATE OR REPLACE TRIGGER set_timestamp_items
 -- =========================================================================
 
 -- 1. Chargement à chaud du catalogue actif en RAM (C#)
-CREATE OR REPLACE FUNCTION sp_load_catalog_ram()
+CREATE OR REPLACE FUNCTION api_load_catalog_ram()
 RETURNS TABLE (
     id BIGINT,
     category_code VARCHAR(50),
@@ -105,7 +105,7 @@ $$ LANGUAGE plpgsql;
 
 
 -- 2. Création d'un nouvel objet
-CREATE OR REPLACE FUNCTION sp_create_item(
+CREATE OR REPLACE FUNCTION api_create_item(
     p_category_code VARCHAR(50),
     p_owner_id BIGINT,
     p_title VARCHAR(150),
@@ -146,7 +146,7 @@ $$ LANGUAGE plpgsql;
 
 
 -- 3. Suppression logique (Soft Delete) avec traçabilité de l'auteur
-CREATE OR REPLACE FUNCTION sp_soft_delete_item(
+CREATE OR REPLACE FUNCTION api_soft_delete_item(
     p_item_id BIGINT,
     p_deleted_by_id BIGINT
 )

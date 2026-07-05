@@ -26,7 +26,7 @@ public record UserRam
         UserGroup = row.GetString("user_group");
 
         #region Droits
-        // Extraction directe des flags agrégés par le sp_load_users_ram
+        // Extraction directe des flags agrégés par le api_load_users_ram
         CanConfigReload = row.GetBool("can_config_reload");
         CanUserManageAll = row.GetBool("can_user_manage_all");
         CanUserManageGroup = row.GetBool("can_user_manage_group");

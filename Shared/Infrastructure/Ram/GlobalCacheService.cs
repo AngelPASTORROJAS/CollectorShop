@@ -31,7 +31,7 @@ public class GlobalCacheService : IGlobalCache
     }
 
     #region Users
-    private const string SpLoadUsersRam = "sp_load_users_ram";
+    private const string SpLoadUsersRam = "api_load_users_ram";
 
     /// <summary>
     /// Récupération instantanée en RAM d'un utilisateur par son ID (Lock-Free)

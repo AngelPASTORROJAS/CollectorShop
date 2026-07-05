@@ -82,7 +82,7 @@ CREATE OR REPLACE TRIGGER set_timestamp_financial_transactions
 -- Fonctions
 -- =========================================================================
 
-CREATE OR REPLACE FUNCTION sp_process_trade(
+CREATE OR REPLACE FUNCTION api_process_trade(
     p_buyer_id BIGINT,
     p_seller_id BIGINT,
     p_item_id BIGINT,
@@ -135,7 +135,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION sp_get_transaction_with_ledger(p_transaction_id BIGINT)
+CREATE OR REPLACE FUNCTION api_get_transaction_with_ledger(p_transaction_id BIGINT)
 RETURNS TABLE (
     transaction_id BIGINT,
     buyer_id BIGINT,
@@ -178,7 +178,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION sp_get_user_transactions_history(p_user_id BIGINT)
+CREATE OR REPLACE FUNCTION api_get_user_transactions_history(p_user_id BIGINT)
 RETURNS TABLE (
     transaction_id BIGINT,
     buyer_id BIGINT,

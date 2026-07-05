@@ -18,7 +18,7 @@ public class AuthService(IGlobalCache globalCache)
             string hash = _hasher.HashPassword(request.Email, request.Password);
 
             var pUserId = new NpgsqlParameter("@p_user_id", DbType.Int64) { Direction = ParameterDirection.Output };
-            using var query = PgSqlQuery.Users("sp_register_user", [
+            using var query = PgSqlQuery.Users("api_register_user", [
                 new("@p_business_name", request.BusinessName),
                 new("@p_email", request.Email),
                 new("@p_password_hash", hash),
@@ -70,7 +70,7 @@ public class AuthService(IGlobalCache globalCache)
         var pHash = new NpgsqlParameter("@p_password_hash", DbType.String, 500) { Direction = ParameterDirection.Output };
         var pIsActive = new NpgsqlParameter("@p_is_active", DbType.Boolean) { Direction = ParameterDirection.Output };
 
-        using var query = PgSqlQuery.Users("sp_get_user_for_login", [
+        using var query = PgSqlQuery.Users("api_get_user_for_login", [
             new("@p_email", request.Email),
             pId, 
             pBusinessName, 
