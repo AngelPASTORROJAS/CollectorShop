@@ -87,7 +87,7 @@ public class GlobalCacheService : IGlobalCache
     public void RefreshUsers()
     {
         // 1. Extraction brute via le standard PgSqlQuery et DataTable
-        var query = PgSqlQuery.Users(SpLoadUsersRam);
+        using var query = PgSqlQuery.Users(SpLoadUsersRam);
         query.AutoThrowException = true;
 
         var table = query.ExecuteAsDataTable();

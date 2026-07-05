@@ -42,13 +42,13 @@ public class PgSqlQuery : IDisposable
         => new(PgDbConnectionFactory.DbUsers, sqlText, parameters);
 
     public static PgSqlQuery TransactionCollector(NpgsqlTransaction transaction, string sqlText, List<NpgsqlParameter>? parameters = null)
-        => new PgSqlQuery(PgDbConnectionFactory.DbCollector, transaction, sqlText, parameters);
+        => new(PgDbConnectionFactory.DbCollector, transaction, sqlText, parameters);
 
     public static PgSqlQuery TransactionFinance(NpgsqlTransaction transaction, string sqlText, List<NpgsqlParameter>? parameters = null)
-        => new PgSqlQuery(PgDbConnectionFactory.DbFinance, transaction, sqlText, parameters);
+        => new(PgDbConnectionFactory.DbFinance, transaction, sqlText, parameters);
 
     public static PgSqlQuery TransactionUsers(NpgsqlTransaction transaction, string sqlText, List<NpgsqlParameter>? parameters = null)
-        => new PgSqlQuery(PgDbConnectionFactory.DbUsers, transaction, sqlText, parameters);
+        => new(PgDbConnectionFactory.DbUsers, transaction, sqlText, parameters);
     #endregion
 
     #region Features
@@ -110,7 +110,10 @@ public class PgSqlQuery : IDisposable
 
         try
         {
-            if (_transaction != null) connection = _transaction.Connection;
+            if (_transaction != null)
+            {
+                connection = _transaction.Connection ?? throw new InvalidOperationException("La transaction ne possède plus de connexion active.");
+            }
             else
             {
                 if (StaticConnectionFactory.Instance == null)
@@ -119,7 +122,7 @@ public class PgSqlQuery : IDisposable
             }
 
             command = GetCommand(connection);
-            using var reader = command.ExecuteReader();
+            var reader = command.ExecuteReader();
             dataTable.Load(reader);
         }
         catch (Exception ex)
@@ -148,7 +151,10 @@ public class PgSqlQuery : IDisposable
 
         try
         {
-            if (_transaction != null) connection = _transaction.Connection;
+            if (_transaction != null)
+            {
+                connection = _transaction.Connection ?? throw new InvalidOperationException("La transaction ne possède plus de connexion active.");
+            }
             else
             {
                 if (StaticConnectionFactory.Instance == null)
@@ -189,7 +195,10 @@ public class PgSqlQuery : IDisposable
 
         try
         {
-            if (_transaction != null) connection = _transaction.Connection;
+            if (_transaction != null)
+            {
+                connection = _transaction.Connection ?? throw new InvalidOperationException("La transaction ne possède plus de connexion active.");
+            }
             else
             {
                 if (StaticConnectionFactory.Instance == null)
@@ -224,7 +233,10 @@ public class PgSqlQuery : IDisposable
 
         try
         {
-            if (_transaction != null) connection = _transaction.Connection;
+            if (_transaction != null)
+            {
+                connection = _transaction.Connection ?? throw new InvalidOperationException("La transaction ne possède plus de connexion active.");
+            }
             else
             {
                 if (StaticConnectionFactory.Instance == null)
@@ -254,6 +266,21 @@ public class PgSqlQuery : IDisposable
 
     public void Dispose()
     {
-        Parameters?.Clear();
+        // 1. Nettoyage explicite des paramètres Npgsql
+        if (Parameters != null)
+        {
+            foreach (var param in Parameters)
+            {
+                // Si le paramètre possède une valeur jetable (comme un flux ou un grand objet)
+                if (param.Value is IDisposable disposableValue)
+                {
+                    disposableValue.Dispose();
+                }
+            }
+            Parameters.Clear();
+        }
+
+        // 2. Indique au Garbage Collector qu'il n'a pas besoin d'appeler le destructeur finaliseur
+        GC.SuppressFinalize(this);
     }
 }

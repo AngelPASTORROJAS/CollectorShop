@@ -6,7 +6,7 @@ public class CollectorRepository
 {
     public async Task<CollectibleItemDto?> GetItemByIdAsync(Guid itemId)
     {
-        return await PgSqlQuery.Collector("sp_get_collectible_item_by_id", [ new ("@p_item_id", itemId) ])
-            .ExecuteAsSingleObjectAsync(row => new CollectibleItemDto(row));
+        using var query = PgSqlQuery.Users("sp_get_collectible_item_by_id", [new("@p_item_id", itemId)]);
+        return await query.ExecuteAsSingleObjectAsync(row => new CollectibleItemDto(row));
     }
 }

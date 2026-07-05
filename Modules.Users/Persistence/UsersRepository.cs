@@ -23,7 +23,7 @@ public class UsersRepository(IGlobalCache globalCache)
         try
         {
             // 2. Écriture physique en Base de données (Léger via ExecuteNonQuery)
-            var query = PgSqlQuery.Users("sp_edit_user_email", [new("@p_user_id", targetUserId), new("@p_user_email", newEmail)]);
+            using var query = PgSqlQuery.Users("sp_edit_user_email", [new("@p_user_id", targetUserId), new("@p_user_email", newEmail)]);
             query.ExecuteNonQuery();
 
             // 3. Mutation par copie immuable de l'objet RAM avec le nouvel email

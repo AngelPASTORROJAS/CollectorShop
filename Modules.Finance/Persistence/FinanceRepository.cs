@@ -13,7 +13,7 @@ public class FinanceRepository
     public long ProcessTrade(long buyerId, long sellerId, long itemId, decimal grossAmount, CurrencyType currency = CurrencyType.EUR)
     {
         // 1. Utilisation du nouveau ExecuteNonQuery car c'est une commande d'écriture
-        var query = PgSqlQuery.Finance("sp_process_trade", [
+        using var query = PgSqlQuery.Finance("sp_process_trade", [
                 new ("@p_buyer_id", buyerId),
                 new ("@p_seller_id", sellerId),
                 new ("@p_item_id", itemId),
@@ -39,8 +39,8 @@ public class FinanceRepository
     /// </summary>
     public async Task<List<TransactionLedgerEntity>> GetTransactionWithLedger(long transactionId)
     {
-        return await PgSqlQuery.Finance("sp_get_transaction_with_ledger", [new("@p_transaction_id", transactionId)])
-            .ExecuteAsListAsync(row => new TransactionLedgerEntity(row));
+        using var query = PgSqlQuery.Finance("sp_get_transaction_with_ledger", [new("@p_transaction_id", transactionId)]);
+        return await query.ExecuteAsListAsync(row => new TransactionLedgerEntity(row));
     }
 
     /// <summary>
@@ -48,8 +48,8 @@ public class FinanceRepository
     /// </summary>
     public async Task<List<TransactionEntity>> GetTransactionHistoryByUserIdAsync(long userId)
     {
-        return await PgSqlQuery.Finance("sp_get_user_transactions_history", [new("@p_user_id", userId)])
-            .ExecuteAsListAsync(row => new TransactionEntity(row));
+        using var query = PgSqlQuery.Finance("sp_get_user_transactions_history", [new("@p_user_id", userId)]);
+        return await query.ExecuteAsListAsync(row => new TransactionEntity(row));
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ public class FinanceRepository
     /// </summary>
     public TransactionDetailsEntity? GetTransactionDetails(long transactionId)
     {
-        var query = PgSqlQuery.Finance("sp_get_transaction_with_ledger", [new("@p_transaction_id", transactionId)]);
+        using var query = PgSqlQuery.Finance("sp_get_transaction_with_ledger", [new("@p_transaction_id", transactionId)]);
 
         var table = query.ExecuteAsDataTable();
 
