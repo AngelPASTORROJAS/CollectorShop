@@ -23,7 +23,7 @@ public static class ApplicationSetup
         "http://localhost:5003", "https://localhost:5004"   // Privé (Admin)
         ];
     private static readonly string[] ALLOWED_HEADERS = ["Content-Type", "Authorization"];
-    private static readonly string[] ALLOWED_METHODS = ["GET"]; // Uniquement du GET (Ex: catalogue public)
+    private static readonly string[] ALLOWED_METHODS = ["GET", "POST", "PUT", "DELETE"];
 
     private static readonly IEnumerable<string> COMPRESSED_MIME_TYPES = ResponseCompressionDefaults.MimeTypes.Concat(["application/json"]);
     
@@ -49,7 +49,8 @@ public static class ApplicationSetup
             options.AddDefaultPolicy(policy => policy
                 .WithOrigins(ALLOWED_ORIGINS)
                 .WithHeaders(ALLOWED_HEADERS)
-                .WithMethods(ALLOWED_METHODS));
+                .WithMethods(ALLOWED_METHODS)
+                .AllowCredentials());
         });
 
         builder.Services.AddResponseCompression(options =>
@@ -117,8 +118,8 @@ public static class ApplicationSetup
             });
         }
 
-        // 5. Couches de sécurité applicatives (Qui tu es, puis ce que tu as le droit de faire)        app.UseAuthentication();
-        app.UseAuthentication();        // Qui tu es
+        // 5. Couches de sécurité applicatives (Qui tu es, puis ce que tu as le droit de faire)
+        app.UseMiddleware<SessionAuthMiddleware>(); // Remplace l'authentification native, remplit le User
         app.UseAuthorization();         // tes droits
 
         // 6. Mapping des routes

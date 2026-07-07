@@ -72,9 +72,13 @@ public class SessionTokenManager
         {
             var principal = tokenHandler.ValidateToken(tokenStr, tvp, out var token);
             if (token is not null && token.ValidTo < DateTime.UtcNow) return null;
-            if (principal?.Identity is not ClaimsIdentity identity || !identity.IsAuthenticated) return null;
 
-            return identity;
+            if (principal?.Identity is ClaimsIdentity identity)
+            {
+                return new ClaimsIdentity(identity.Claims, "CustomAuth");
+            }
+
+            return null;
         }
         catch
         {
