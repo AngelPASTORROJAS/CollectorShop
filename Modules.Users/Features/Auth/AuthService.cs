@@ -17,16 +17,17 @@ public class AuthService(IGlobalCache globalCache)
         {
             string hash = _hasher.HashPassword(request.Email, request.Password);
 
-            var pUserId = new NpgsqlParameter("@p_user_id", DbType.Int64) { Direction = ParameterDirection.Output };
             using var query = PgSqlQuery.Users("api_register_user", [
                 new("@p_business_name", request.BusinessName),
                 new("@p_email", request.Email),
-                new("@p_password_hash", hash),
-                pUserId
+                new("@p_password_hash", hash)
             ]);
+            var dt = await query.ExecuteAsDataTableAsync();
 
-            await query.ExecuteNonQueryAsync();
-            long newId = Convert.ToInt64(pUserId.Value);
+            if (dt == null || dt.Rows.Count == 0)
+                return "Erreur lors de la création de l'utilisateur (aucun identifiant renvoyé).";
+
+            long newId = Convert.ToInt64(dt.Rows[0][0]);
 
             var table = new DataTable();
             table.Columns.Add("id", typeof(long));

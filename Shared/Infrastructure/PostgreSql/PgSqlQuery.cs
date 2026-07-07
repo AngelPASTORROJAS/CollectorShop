@@ -96,7 +96,7 @@ public class PgSqlQuery : IDisposable
             command.Parameters.Add(param);
 
         var inputParams = Parameters.Where(p => p.Direction == ParameterDirection.Input || p.Direction == ParameterDirection.InputOutput).ToList();
-        var placeholders = string.Join(", ", inputParams.Select((_, index) => $"${index + 1}"));
+        var placeholders = string.Join(", ", inputParams.Select(p => p.ParameterName.StartsWith("@") ? p.ParameterName : $"@{p.ParameterName}"));
 
         command.CommandText = $"SELECT * FROM {SqlText.Trim()}({placeholders});";
 
