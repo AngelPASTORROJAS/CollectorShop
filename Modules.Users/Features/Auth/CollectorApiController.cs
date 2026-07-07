@@ -4,17 +4,5 @@ namespace Modules.Users.Features.Auth;
 
 public class CollectorApiController : ControllerBase
 {
-
-    protected long GetUserId
-    {
-        get
-        {
-            var claim = User.Claims.FirstOrDefault(c => c.Type == "U");
-            if (claim is null)
-            {
-                return 0;
-            } 
-            return long.Parse(claim.Value);
-        }
-    }
+    protected long GetUserId => long.Parse(User.Claims.FirstOrDefault(c => c.Type == "U")?.Value ?? "0");
 }
