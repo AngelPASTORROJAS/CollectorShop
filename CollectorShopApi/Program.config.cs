@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.FileProviders;
 using System.IO.Compression;
@@ -40,6 +40,7 @@ public static class ApplicationSetup
         builder.Services.AddTransient<UsersRepository>();
         builder.Services.AddTransient<FinanceRepository>();
         builder.Services.AddTransient<CollectorRepository>();
+        builder.Services.AddTransient<ChatRepository>();
 
         builder.Services.AddSingleton<SessionTokenManager>();
         builder.Services.AddTransient<AuthService>();

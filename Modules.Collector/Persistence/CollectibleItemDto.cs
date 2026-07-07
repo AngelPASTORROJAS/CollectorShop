@@ -1,30 +1,24 @@
-﻿using Shared.Infrastructure.PostgreSql;
+using Shared.Infrastructure.PostgreSql;
 using System.Data;
 
 namespace Modules.Collector.Persistence;
 
-/// <summary>
-/// DTO de transfert pour le catalogue, lié de manière isomorphe à api_get_collectible_item_by_id
-/// </summary>
 public record CollectibleItemDto
 {
-    public Guid Id { get; init; }
-    public string Name { get; init; }
-    public string Description { get; init; }
+    public long Id { get; init; }
+    public string CategoryCode { get; init; }
+    public long OwnerId { get; init; }
+    public string Title { get; init; }
     public decimal Price { get; init; }
-    public string Rarity { get; init; }
+    public string MetadataJson { get; init; }
 
-    // Le constructeur extrait les données proprement
     public CollectibleItemDto(DataRow row)
     {
-        Id = row.GetGuid("id") ?? Guid.Empty;
-        Name = row.GetString("name") ?? "Nom inconnu";
-        Description = row.GetString("description") ?? "";
-
-        // Pour le prix (decimal), on peut faire un cast direct s'il n'est pas nul,
-        // ou utiliser une conversion sécurisée selon ce que renvoie PostgreSQL
+        Id = (long)row["id"];
+        CategoryCode = row["category_code"]?.ToString() ?? string.Empty;
+        OwnerId = (long)row["owner_id"];
+        Title = row["title"]?.ToString() ?? string.Empty;
         Price = row.IsNull("price") ? 0.00m : Convert.ToDecimal(row["price"]);
-
-        Rarity = row.GetString("rarity") ?? "Common";
+        MetadataJson = row["metadata_json"]?.ToString() ?? "{}";
     }
 }
