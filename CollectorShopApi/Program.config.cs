@@ -130,20 +130,6 @@ public static class ApplicationSetup
 
         app.MapHealthChecks("/health");
 
-        // Route pour recharger UNIQUEMENT la brique utilisateur à chaud (Ex: après modif SQL)
-        app.MapPost("/infra/cache/refresh/users", ([FromServices] IGlobalCache cache) =>
-        {
-            cache.RefreshUsers();
-            return Results.Ok(new { Message = "Cache des utilisateurs rechargé avec succès.", Time = cache.GetLoadTime() });
-        });
-
-        // Route pour recharger l'INTEGRALITE du système
-        app.MapPost("/infra/cache/refresh/all", ([FromServices] IGlobalCache cache) =>
-        {
-            cache.RefreshAll();
-            return Results.Ok(new { Message = "L'intégralité du cache global a été synchronisée.", Time = cache.GetLoadTime() });
-        });
-
         // 1. Initialisation de la factory statique pour ADO.NET
         var factory = app.Services.GetRequiredService<PgDbConnectionFactory>();
         StaticConnectionFactory.Initialize(factory);
