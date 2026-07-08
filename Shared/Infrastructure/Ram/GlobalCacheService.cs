@@ -45,33 +45,27 @@ public class GlobalCacheService : IGlobalCache
     /// <summary>
     /// Met à jour un utilisateur dans le cache en RAM via une boucle atomique Compare-And-Swap (CAS) non bloquante.
     /// </summary>
-    /// <remarks>
-    /// DESIGN ARCHITECTURAL CRITIQUE - NE PAS MODIFIER OU REMPLACER PAR UN 'lock' TRADITIONNEL :
-    /// 1. RACE CONDITIONS (Concurrence) : Interlocked.CompareExchange garantit que si deux threads tentent
-    ///    une mise à jour simultanée, un seul gagne. Le thread perdant recommence proprement avec le nouvel état.
-    /// 2. DEADLOCKS (Verrous mortels) : Ce code est totalement "Lock-Free". N'utilisant aucun verrou exclusif,
-    ///    il est mathématiquement impossible de provoquer un interblocage (deadlock).
-    /// 3. STARVATION (Famine de thread) : Sous haute charge, l'ordonnancement natif du processeur garantit 
-    ///    que chaque thread finit par appliquer sa modification, assurant un débit maximal sans blocage permanent.
-    /// </remarks>
     public void UpdateUserInCache(UserRam updatedUser)
     {
-        // Boucle de mise à jour optimiste (Compare-And-Swap)
         while (true)
         {
             var oldStore = _currentStore;
 
-            // On crée un nouveau dictionnaire à partir de l'ancien en remplaçant la cible
+            // Sécurité : Si l'utilisateur en RAM est déjà identique à la mise à jour, on évite des allocations inutiles
+            if (oldStore.AllUsers.TryGetValue(updatedUser.Id, out var existing) && existing == updatedUser)
+                break;
+
+            // On crée un nouveau dictionnaire à partir de l'état le plus récent du Store
             var newDictionary = oldStore.AllUsers.ToDictionary(k => k.Key, v => v.Value);
             newDictionary[updatedUser.Id] = updatedUser;
 
             var newStore = new GlobalDataStore
             {
                 LoadTime = DateTime.UtcNow,
-                AllUsers = newDictionary.ToFrozenDictionary()
+                AllUsers = newDictionary.ToFrozenDictionary(),
             };
 
-            // Échange atomique : si _currentStore n'a pas bougé entre temps, on applique
+            // Échange atomique : si aucun autre thread n'a modifié _currentStore (Users OU autre dictionnaire), on applique
             if (Interlocked.CompareExchange(ref _currentStore, newStore, oldStore) == oldStore)
             {
                 break;
@@ -100,21 +94,24 @@ public class GlobalCacheService : IGlobalCache
             }
         }
 
-        // 2. Récupération de la référence actuelle du Store pour préserver les AUTRES dictionnaires
-        GlobalDataStore oldStore = _currentStore;
+        var frozenUsers = userMap.ToFrozenDictionary();
 
-        // 3. Construction d'une nouvelle instance du Store combinant le neuf et l'ancien
-        var newStore = new GlobalDataStore
+        // 2. Boucle CAS pour s'assurer qu'on ne perd pas une mise à jour d'un AUTRE dictionnaire faite en parallèle
+        while (true)
         {
-            LoadTime = DateTime.UtcNow,
-            AllUsers = userMap.ToFrozenDictionary(),
+            var oldStore = _currentStore;
 
-            // Autres dictionnaires à préservé :
-            // AllOtherCached = oldStore.AllOtherCached
-        };
+            var newStore = new GlobalDataStore
+            {
+                LoadTime = DateTime.UtcNow,
+                AllUsers = frozenUsers,
+            };
 
-        // 4. Échange atomique sans lock
-        Interlocked.Exchange(ref _currentStore, newStore);
+            if (Interlocked.CompareExchange(ref _currentStore, newStore, oldStore) == oldStore)
+            {
+                break;
+            }
+        }
     }
     #endregion
 }
