@@ -20,8 +20,8 @@ services:
       dockerfile: DataBasePostgreSql/Dockerfile
     environment:
       - DB_USERS_CONNECTION=Host=collectorshop-users-postgres;Port=5432;Database=users_db;Username=myuser;Password=mypassword;
-      - DB_FINANCE_CONNECTION=Host=collectorshop-finance-postgres;Port=5434;Database=finance_db;Username=myuser;Password=mypassword;
-      - DB_COLLECTOR_CONNECTION=Host=collectorshop-collector-postgres;Port=5433;Database=collector_db;Username=myuser;Password=mypassword;
+      - DB_FINANCE_CONNECTION=Host=collectorshop-finance-postgres;Port=5432;Database=finance_db;Username=myuser;Password=mypassword;
+      - DB_COLLECTOR_CONNECTION=Host=collectorshop-collector-postgres;Port=5432;Database=collector_db;Username=myuser;Password=mypassword;
     depends_on:
       users.database:
         condition: service_healthy

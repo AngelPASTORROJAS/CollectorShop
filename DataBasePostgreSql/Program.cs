@@ -18,6 +18,9 @@ public class Program
         // 1. Récupération sécurisée des connexions (Variables d'env pour la CI/CD)
         string cnxUsers = Environment.GetEnvironmentVariable("DB_USERS_CONNECTION")
             ?? "Host=localhost;Port=5432;Database=users_db;Username=postgres;Password=root;";
+        
+        string cnxColletor = Environment.GetEnvironmentVariable("DB_COLLECTOR_CONNECTION")
+            ?? "Host=localhost;Port=5433;Database=collector_db;Username=postgres;Password=root;";
 
         string cnxFinance = Environment.GetEnvironmentVariable("DB_FINANCE_CONNECTION")
             ?? "Host=localhost;Port=5434;Database=finance_db;Username=postgres;Password=root;";
@@ -25,6 +28,7 @@ public class Program
         // 2. Exécution séquentielle des migrations pour chaque base
         if (!ExecuteMigration(DbUsers, cnxUsers)) return 1;
         if (!ExecuteMigration(DbFinance, cnxFinance)) return 1;
+        if (!ExecuteMigration(DbCollector, cnxColletor)) return 1;
 
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("\n Toutes les bases de données sont à jour. Fin de la CI/CD.");
