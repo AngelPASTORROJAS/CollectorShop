@@ -60,6 +60,7 @@ public class AuthController(AuthService authService, SessionTokenManager tokenMa
 
 
     [HttpGet("me")]
+    [UserAuth]
     public IActionResult GetMyUser()
     {
         var userDto = _userRepository.GetUserById(GetUserId);

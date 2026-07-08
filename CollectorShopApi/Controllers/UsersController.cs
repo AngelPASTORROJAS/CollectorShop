@@ -5,7 +5,7 @@ using Modules.Users.Persistence;
 namespace CollectorShopApi.Controllers;
 
 [ApiController]
-[UserAuthAttribute]
+[UserAuth]
 [Route("api/users")]
 public class UsersController(UsersRepository userRepository) : ControllerBase
 {
