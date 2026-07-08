@@ -12,7 +12,7 @@ public class ChatController(ChatRepository chatRepository) : CollectorApiControl
     [HttpGet("{itemId}")]
     public async Task<IActionResult> GetMessages(long itemId)
     {
-        long userId = GetUserId;
+        long userId = GetCurrentUserId;
         if (userId <= 0) return Unauthorized();
 
         var messages = await chatRepository.GetMessagesForItemAsync(itemId);
@@ -22,7 +22,7 @@ public class ChatController(ChatRepository chatRepository) : CollectorApiControl
     [HttpPost("{itemId}")]
     public async Task<IActionResult> SendMessage(long itemId, [FromBody] ChatSendMessageDto request)
     {
-        long senderId = GetUserId;
+        long senderId = GetCurrentUserId;
         if (senderId <= 0) return Unauthorized();
 
         try

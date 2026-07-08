@@ -19,7 +19,7 @@ public class ItemsController(CollectorRepository collectorRepository) : Collecto
     [UserAuth] 
     public async Task<IActionResult> CreateItem([FromBody] ItemCreateDto request)
     {
-        long userId = GetUserId;
+        long userId = GetCurrentUserId;
         if (userId <= 0) return Unauthorized();
 
         try

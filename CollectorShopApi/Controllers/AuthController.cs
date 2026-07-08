@@ -63,7 +63,7 @@ public class AuthController(AuthService authService, SessionTokenManager tokenMa
     [UserAuth]
     public IActionResult GetMyUser()
     {
-        var userDto = _userRepository.GetUserById(GetUserId);
+        var userDto = _userRepository.GetUserById(GetCurrentUserId);
 
         if (userDto == null)
         {
