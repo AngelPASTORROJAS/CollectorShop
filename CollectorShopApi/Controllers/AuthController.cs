@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Modules.Users.Features.Auth;
 using Modules.Users.Persistence;
+using Shared.Infrastructure.Security;
 
 namespace CollectorShopApi.Controllers;
 
@@ -33,8 +34,8 @@ public class AuthController(AuthService authService, SessionTokenManager tokenMa
         // Préparation des métadonnées du badge d'accès (Claims)
         var claims = new List<KeyValuePair<string, string>>
         {
-            new(tokenManager.TOKEN_KEY_USERID, user!.Id.ToString()),
-            new(tokenManager.TOKEN_KEY_TYPE, tokenManager.TOKEN_VALUE_TYPE),
+            new(AuthConstants.ClaimUserId, user!.Id.ToString()),
+            new(AuthConstants.ClaimSourceChannel, AuthConstants.ChannelFrontEnd),
         };
 
         // 1. Génération du JWT signé cryptographiquement

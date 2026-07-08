@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.DependencyInjection;
+using Shared.Infrastructure.Security;
 
 namespace Modules.Users.Features.Auth;
 
@@ -9,30 +9,22 @@ public class UserAuthAttribute : Attribute, IAsyncAuthorizationFilter
 {
     public Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
-        // On laisse passer les requêtes d'en-tête de sécurité CORS du navigateur
         if (context.HttpContext.Request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
         {
             return Task.CompletedTask;
         }
 
-        var tokenManager = context.HttpContext.RequestServices.GetRequiredService<SessionTokenManager>();
-        string? token = tokenManager.GetToken(context.HttpContext);
+        var user = context.HttpContext.User;
 
-        if (!string.IsNullOrEmpty(token))
+        if (user.Identity?.IsAuthenticated == true)
         {
-            var identity = tokenManager.DecodeJwtToken(token);
-            if (identity is not null)
+            var sourceClaim = user.FindFirst(AuthConstants.ClaimSourceChannel)?.Value;
+            if (sourceClaim == AuthConstants.ChannelFrontEnd)
             {
-                var typeClaim = identity.Claims.FirstOrDefault(c => c.Type == tokenManager.TOKEN_KEY_TYPE)?.Value;
-                if (typeClaim == tokenManager.TOKEN_VALUE_TYPE)
-                {
-                    context.HttpContext.User.AddIdentity(identity);
-                    return Task.CompletedTask; // Accès accordé !
-                }
+                return Task.CompletedTask;
             }
         }
 
-        // Si pas de token ou token corrompu/expiré -> 401 Unauthorized direct
         context.Result = new UnauthorizedResult();
         return Task.CompletedTask;
     }

@@ -13,10 +13,6 @@ public class SessionTokenManager
     private readonly string _jwtAudience;
     private readonly byte[] _jwtSigningKey;
 
-    public readonly string TOKEN_KEY_TYPE = "T";
-    public readonly string TOKEN_VALUE_TYPE = "G";
-    public readonly string TOKEN_KEY_USERID = "U";
-
     public SessionTokenManager(IConfiguration configuration)
     {
         // Lecture des configurations (avec valeurs de secours pour le dev local)
