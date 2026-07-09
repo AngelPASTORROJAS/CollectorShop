@@ -4,6 +4,7 @@
   <Project Path="docker-compose.dcproj">
     <Build />
   </Project>
+  <Project Path="IntegrationTests/IntegrationTests.csproj" Id="358fb5cf-6c39-4afe-9237-c51b3f263f70" />
   <Project Path="Modules.Collector/Modules.Collector.csproj" Id="c52580aa-9238-41a5-8f28-dc7eca3055f1" />
   <Project Path="Modules.Finance/Modules.Finance.csproj" Id="61002fc7-d26a-460a-8f6e-57f3a56b4988" />
   <Project Path="Modules.Users/Modules.Users.csproj" Id="dafc40ea-8e1b-4e97-b3c2-c7d81e8aa058" />

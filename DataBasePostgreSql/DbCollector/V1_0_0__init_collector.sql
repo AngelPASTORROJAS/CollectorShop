@@ -172,5 +172,6 @@ $$ LANGUAGE plpgsql;
 INSERT INTO categories (code, name) VALUES 
 ('POKEMON_CARD', 'Cartes Pokémon'),
 ('ANCIENT_COIN', 'Pièces de Monnaie Anciennes'),
-('ACTION_FIGURE', 'Figurines d''Action')
+('ACTION_FIGURE', 'Figurines d''Action'),
+('CONSOLES', 'Console de jeux video')
 ON CONFLICT (code) DO NOTHING;

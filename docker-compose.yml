@@ -137,6 +137,23 @@ services:
       finance.database:
         condition: service_healthy
 
+  # =========================================================================
+  # RUNNER DE TESTS D'INTÉGRATION
+  # =========================================================================
+  api.tests:
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    container_name: collectorshop-api-tests
+    volumes:
+      - .:/src
+    working_dir: /src
+    environment:
+      - API_BASE_URL=https://collectorshopapi:5001
+      - DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER=0
+    command: dotnet test IntegrationTests/IntegrationTests.csproj --logger "console;verbosity=detailed"
+    depends_on:
+      collectorshopapi:
+        condition: service_started
+
 volumes:
   users_postgres_data:
   collector_postgres_data:

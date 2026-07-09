@@ -83,10 +83,11 @@ public static class ApplicationSetup
         if (!app.Environment.IsDevelopment())
         {
             app.UseHsts();
+            
+            // 1. Redirection HTTPS en tête (Garantit le chiffrement forcé des flux)
+            app.UseHttpsRedirection();
         }
 
-        // 1. Redirection HTTPS en tête (Garantit le chiffrement forcé des flux)
-        app.UseHttpsRedirection();
 
         // 2. Compression (Doit intercepter le flux le plus haut possible)
         app.UseResponseCompression();
