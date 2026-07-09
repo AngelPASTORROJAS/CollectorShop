@@ -12,8 +12,6 @@ using Modules.Users.Features.Auth;
 
 namespace CollectorShopApi;
 
-
-
 #region StartUp
 public static class ApplicationSetup
 {
@@ -64,11 +62,14 @@ public static class ApplicationSetup
  
         // On retire la politique camelCase par défaut, pas de "mapping mental" => "Isomorphe"
         builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.PropertyNamingPolicy = null);
-        
-        builder.Services.AddControllers();
+
+        builder.Services.AddControllers()
+            .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
+
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddOpenApiDocument(options => {
             options.Title = "Collector Shop API";
+            options.OperationProcessors.Add(new ForceJsonMediaTypeProcessor());
         });
 
         builder.Services.AddHealthChecks()
@@ -108,7 +109,7 @@ public static class ApplicationSetup
         // 4. CORS (Doit être exécuté impérativement AVANT le routage et l'authentification)
         app.UseCors();
 
-        // 5. OpenAPI (Swagger)
+        // 5. Scalar
         if (app.Environment.IsDevelopment())
         {
             app.UseOpenApi();
