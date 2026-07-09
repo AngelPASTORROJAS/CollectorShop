@@ -18,7 +18,7 @@ public static class ApplicationSetup
 {
     // --- Configuration du Domaine ---
     private static readonly string[] ALLOWED_ORIGINS = [
-        "http://localhost:5001", "https://localhost:5002",  // Public (Utilisateurs / Acheteurs / Vendeurs)
+        "http://localhost:5173",  // Public (Utilisateurs / Acheteurs / Vendeurs)
         "http://localhost:5003", "https://localhost:5004"   // Privé (Admin)
         ];
     private static readonly string[] ALLOWED_HEADERS = ["Content-Type", "Authorization"];
