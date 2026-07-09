@@ -21,3 +21,11 @@ public enum CurrencyType
     GBP,
     CHF
 }
+
+public enum ItemStatus
+{
+    AVAILABLE,
+    RESERVED,
+    SOLD,
+    ARCHIVED
+}
