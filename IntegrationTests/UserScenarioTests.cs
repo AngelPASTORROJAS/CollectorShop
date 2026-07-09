@@ -1,10 +1,5 @@
-﻿using System;
-using System.Net;
-using System.Net.Http;
+﻿using System.Net;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Xunit;
 
 namespace IntegrationTests;
 
@@ -105,6 +100,38 @@ public class UserScenarioTests
         var items = await catalogueResponse.Content.ReadFromJsonAsync<List<CollectibleItemDto>>();
         Assert.NotNull(items);
         Assert.Contains(items, item => item.Id == itemResult.ItemId);
+
+        // -------------------------------------------------------------
+        // ÉTAPE 5 : AJOUT - Récupération unitaire par ID (GetItemById)
+        // -------------------------------------------------------------
+        var itemByIdResponse = await bobClient.GetAsync($"/api/items/{itemResult.ItemId}");
+        Assert.Equal(HttpStatusCode.OK, itemByIdResponse.StatusCode);
+
+        var detailedItem = await itemByIdResponse.Content.ReadFromJsonAsync<CollectibleItemDto>();
+        Assert.NotNull(detailedItem);
+        Assert.Equal($"Game Boy Color Clear Purple ({uniqueId})", detailedItem.Title);
+
+        // -------------------------------------------------------------
+        // ÉTAPE 6 : AJOUT - Sécurité : Bob tente de supprimer l'objet d'Alice
+        // -------------------------------------------------------------
+        var bobDeleteResponse = await bobClient.DeleteAsync($"/api/items/{itemResult.ItemId}");
+        Assert.Equal(HttpStatusCode.Forbidden, bobDeleteResponse.StatusCode); // Doit renvoyer 403 !
+
+        // -------------------------------------------------------------
+        // ÉTAPE 7 : AJOUT - Succès : Alice supprime son propre objet
+        // -------------------------------------------------------------
+        var aliceDeleteResponse = await aliceClient.DeleteAsync($"/api/items/{itemResult.ItemId}");
+        Assert.Equal(HttpStatusCode.OK, aliceDeleteResponse.StatusCode);
+
+        // -------------------------------------------------------------
+        // ÉTAPE 8 : AJOUT - Vérification : L'objet a bien disparu du catalogue
+        // -------------------------------------------------------------
+        var postDeleteCatalogueResponse = await bobClient.GetAsync("/api/items");
+        Assert.Equal(HttpStatusCode.OK, postDeleteCatalogueResponse.StatusCode);
+
+        var updatedItems = await postDeleteCatalogueResponse.Content.ReadFromJsonAsync<List<CollectibleItemDto>>();
+        Assert.NotNull(updatedItems);
+        Assert.DoesNotContain(updatedItems, item => item.Id == itemResult.ItemId); // Ne doit plus y être !
     }
 }
 

@@ -148,12 +148,8 @@ $$ LANGUAGE plpgsql;
 -- 3. Suppression logique (Soft Delete) avec traçabilité de l'auteur
 CREATE OR REPLACE FUNCTION api_soft_delete_item(
     p_item_id BIGINT,
-    p_deleted_by_id BIGINT
-)
-RETURNS BOOLEAN AS $$
-DECLARE
-    v_rows_updated INT;
-BEGIN
+    p_deleted_by_id BIGINT)RETURNS BOOLEAN AS $$DECLARE
+    v_rows_updated INT;BEGIN
     UPDATE items
     SET 
         status = 'ARCHIVED',
@@ -163,10 +159,47 @@ BEGIN
       AND deleted_at IS NULL;
 
     GET DIAGNOSTICS v_rows_updated = ROW_COUNT;
-    RETURN v_rows_updated > 0;
+    RETURN v_rows_updated > 0;END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION api_get_item_by_id(p_item_id BIGINT)
+RETURNS TABLE (
+    id BIGINT,
+    category_code VARCHAR(50),
+    owner_id BIGINT,
+    title VARCHAR(150),
+    description TEXT,
+    price NUMERIC(12, 2),
+    status VARCHAR(50),
+    metadata_json TEXT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        i.id,
+        c.code AS category_code,
+        i.owner_id,
+        i.title,
+        i.description,
+        i.price,
+        i.status::varchar,
+        i.metadata::text AS metadata_json
+    FROM items i
+    INNER JOIN categories c ON i.category_id = c.id
+    WHERE i.id = p_item_id 
+      AND i.deleted_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION api_get_item_owner(p_item_id BIGINT)
+RETURNS TABLE (owner_id BIGINT) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT i.owner_id 
+    FROM items i
+    WHERE i.id = p_item_id AND i.deleted_at IS NULL;
+END;
+$$ LANGUAGE plpgsql;
 
 -- Données de référence initiales pour vos tests
 INSERT INTO categories (code, name) VALUES 

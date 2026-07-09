@@ -1,14 +1,15 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.FileProviders;
-using System.IO.Compression;
+using Modules.Collector.Persistence;
+using Modules.Finance.Persistence;
+using Modules.Users.Features.Auth;
+using Modules.Users.Persistence;
 using Scalar.AspNetCore;
 using Shared.Infrastructure.PostgreSql;
 using Shared.Infrastructure.Ram;
-using Modules.Finance.Persistence;
-using Modules.Collector.Persistence;
-using Modules.Users.Persistence;
-using Modules.Users.Features.Auth;
+using System.IO.Compression;
 
 namespace CollectorShopApi;
 
@@ -62,6 +63,26 @@ public static class ApplicationSetup
  
         // On retire la politique camelCase par défaut, pas de "mapping mental" => "Isomorphe"
         builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.PropertyNamingPolicy = null);
+
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            options.DefaultForbidScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        })
+        .AddCookie(options =>
+        {
+            options.Events.OnRedirectToLogin = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return Task.CompletedTask;
+            };
+            options.Events.OnRedirectToAccessDenied = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                return Task.CompletedTask;
+            };
+        });
 
         builder.Services.AddControllers()
             .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);

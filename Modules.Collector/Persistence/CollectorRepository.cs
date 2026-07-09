@@ -32,4 +32,38 @@ public class CollectorRepository
         }
         return -1;
     }
+
+    public async Task<CollectibleItemDto?> GetItemByIdAsync(long id)
+    {
+        var parameters = new List<NpgsqlParameter> { new("p_item_id", id) };
+        using var query = PgSqlQuery.Collector("api_get_item_by_id", parameters);
+
+        return await query.ExecuteAsSingleObjectAsync(row => new CollectibleItemDto(row));
+    }
+
+    public async Task<ItemOwnerInfo?> GetItemOwnerAsync(long id)
+    {
+        var parameters = new List<NpgsqlParameter> { new("p_item_id", id) };
+        using var query = PgSqlQuery.Collector("api_get_item_owner", parameters);
+
+        return await query.ExecuteAsSingleObjectAsync(row => new ItemOwnerInfo(Convert.ToInt64(row["owner_id"])));
+    }
+
+    public async Task<bool> DeleteItemAsync(long id, long deletedByUserId)
+    {
+        var parameters = new List<NpgsqlParameter>
+        {
+            new("p_item_id", id),
+            new("p_deleted_by_id", deletedByUserId)
+        };
+
+        using var query = PgSqlQuery.Collector("api_soft_delete_item", parameters);
+        var dt = await query.ExecuteAsDataTableAsync();
+
+        if (dt != null && dt.Rows.Count > 0)
+        {
+            return Convert.ToBoolean(dt.Rows[0][0]);
+        }
+        return false;
+    }
 }

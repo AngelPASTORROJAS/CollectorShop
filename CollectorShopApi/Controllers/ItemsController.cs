@@ -19,6 +19,16 @@ public class ItemsController(CollectorRepository collectorRepository) : Collecto
         return Ok(items);
     }
 
+    [HttpGet("{id:long}")]
+    public async Task<IActionResult> GetItemById(long id)
+    {
+        var item = await collectorRepository.GetItemByIdAsync(id);
+        if (item == null)
+            return NotFound(new ErrorResponseDto("Article introuvable."));
+
+        return Ok(item);
+    }
+
     [HttpPost]
     [UserAuth]
     public async Task<IActionResult> CreateItem([FromBody] ItemCreateDto request)
@@ -39,5 +49,25 @@ public class ItemsController(CollectorRepository collectorRepository) : Collecto
         {
             return StatusCode(500);
         }
+    }
+
+    [HttpDelete("{id:long}")]
+    [UserAuth]
+    public async Task<IActionResult> DeleteItem(long id)
+    {
+        long userId = GetCurrentUserId;
+        if (userId <= 0) return Unauthorized();
+
+        var ownerInfo = await collectorRepository.GetItemOwnerAsync(id);
+        if (ownerInfo == null)
+            return NotFound(new ErrorResponseDto("Article introuvable ou déjà supprimé."));
+
+        if (ownerInfo.OwnerId != userId)
+            return Forbid();
+
+        bool success = await collectorRepository.DeleteItemAsync(id, userId);
+        if (success)
+            return Ok(new { message = "Article supprimé avec succès." });
+        return BadRequest(new ErrorResponseDto("Impossible de supprimer l'article."));
     }
 }
