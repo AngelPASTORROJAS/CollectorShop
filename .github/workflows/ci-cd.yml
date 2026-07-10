@@ -88,5 +88,5 @@ jobs:
           file: ./CollectorShopApi/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/collector-shop-api:latest
-            ghcr.io/${{ github.repository }}/collector-shop-api:${{ github.event.inputs.front_tag || 'latest' }}
+            ghcr.io/angelpastorrojas/collectorshop/collector-shop-api:latest
+            ghcr.io/angelpastorrojas/collectorshop/collector-shop-api:${{ github.event.inputs.front_tag || 'latest' }}
