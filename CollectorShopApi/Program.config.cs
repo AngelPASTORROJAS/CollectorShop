@@ -153,6 +153,16 @@ public static class ApplicationSetup
 
         app.MapHealthChecks("/health");
 
+        // 1. Fallback pour l'espace d'administration
+        app.MapFallbackToFile("/admin/{*path:nonfile}", "admin/index.html");
+
+        // 2. Fallback par défaut pour le site public
+        app.MapFallbackToFile("index.html", new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(Path.Combine(app.Environment.ContentRootPath, "wwwroot", "public")),
+            RequestPath = ""
+        });
+
         // 1. Initialisation de la factory statique pour ADO.NET
         var factory = app.Services.GetRequiredService<PgDbConnectionFactory>();
         StaticConnectionFactory.Initialize(factory);
