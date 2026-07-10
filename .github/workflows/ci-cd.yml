@@ -48,22 +48,35 @@ jobs:
       - name: 📥 Fetch Front-End Release Artifact
         if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
         run: |
-          # 1. Récupération de l'URL de téléchargement de l'asset dist.tar.gz
-          # S'il s'agit d'un push automatique, on demande par défaut la version 'latest'
           TAG_TO_FETCH="${{ github.event.inputs.front_tag || 'latest' }}"
+          echo "🔍 Tentative de récupération du Front-End (Tag: $TAG_TO_FETCH)..."
 
-          ASSET_URL=$(curl -s https://api.github.com/repos/AngelPASTORROJAS/CollectorShopFront/releases/tags/$TAG_TO_FETCH | jq -r '.assets[] | select(.name=="dist.tar.gz") | .browser_download_url')
-
-          # Si l'URL est vide (par exemple si la release n'existe pas), on tente de récupérer la toute dernière release générale
-          if [ "$ASSET_URL" = "null" ] || [ -z "$ASSET_URL" ]; then
-            echo "⚠️ Tag spécifié non trouvé, récupération de la dernière release en date..."
-            ASSET_URL=$(curl -s https://api.github.com/repos/AngelPASTORROJAS/CollectorShopFront/releases/latest | jq -r '.assets[] | select(.name=="dist.tar.gz") | .browser_download_url')
+          # 1. Choix de l'URL de l'API en fonction du tag
+          if [ "$TAG_TO_FETCH" = "latest" ]; then
+            API_URL="https://api.github.com/repos/AngelPASTORROJAS/CollectorShopFront/releases/latest"
+          else
+            API_URL="https://api.github.com/repos/AngelPASTORROJAS/CollectorShopFront/releases/tags/$TAG_TO_FETCH"
           fi
 
-          # 2. Téléchargement
-          curl -L -o dist.tar.gz "$ASSET_URL"
+          # 2. Récupération de l'URL de l'asset avec authentification (évite le Rate Limit)
+          ASSET_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" $API_URL | jq -r '.assets[]? | select(.name=="dist.tar.gz") | .browser_download_url')
 
-          # 3. Extraction directement dans wwwroot/public
+          # 3. Sécurité si l'asset n'est pas trouvé (on tente un repli sur la toute dernière release stable)
+          if [ -z "$ASSET_URL" ] || [ "$ASSET_URL" = "null" ]; then
+            echo "⚠️ Tag ou asset introuvable sur l'URL spécifiée. Repli sur la dernière release générale..."
+            ASSET_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/AngelPASTORROJAS/CollectorShopFront/releases/latest | jq -r '.assets[]? | select(.name=="dist.tar.gz") | .browser_download_url')
+          fi
+
+          # 4. Vérification finale avant téléchargement
+          if [ -z "$ASSET_URL" ] || [ "$ASSET_URL" = "null" ]; then
+            echo "❌ Erreur : Impossible de trouver l'asset dist.tar.gz sur le dépôt Front-End."
+            exit 1
+          fi
+
+          # 5. Téléchargement et extraction
+          echo "📥 Téléchargement de l'architecture Front-End..."
+          curl -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -o dist.tar.gz "$ASSET_URL"
+
           mkdir -p CollectorShopApi/wwwroot/public
           tar -xzf dist.tar.gz -C CollectorShopApi/wwwroot/public --strip-components=1
 
