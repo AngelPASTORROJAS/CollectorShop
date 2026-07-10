@@ -2,26 +2,26 @@ name: CI/CD DevSecOps Pipeline
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "main" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "main" ]
+  workflow_dispatch:
 
 jobs:
   audit-security:
-      name: Security Scan (SAST & Secrets)
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout Code
-          uses: actions/checkout@v4
-          with:
-            fetch-depth: 0
+    name: Security Scan (SAST & Secrets)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-        - name: Run Trufflehog Secret Scan
-          uses: trufflesecurity/trufflehog@main
-          with:
-            path: ./
-            extra_args: --scanned-from-gitbranch
-          continue-on-error: true
+      - name: Run Trufflehog Secret Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+        continue-on-error: true
 
   build-and-test:
     name: Compilation & Integration Tests
@@ -42,15 +42,11 @@ jobs:
       - name: Verify Code Compilation
         run: dotnet build --no-restore --configuration Release
 
-      - name: Install Docker Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
-
+      # Pas besoin d'installer Docker ! On utilise directement la version native "docker compose"
       - name: Run Infrastructure & Integration Tests via Docker Compose
         run: |
-          docker-compose up --build
+          docker compose up --build --exit-code-from api.tests
 
       - name: Shutdown Containers
         if: always()
-        run: docker-compose down -v
+        run: docker compose down -v
