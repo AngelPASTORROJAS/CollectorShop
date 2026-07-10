@@ -15,6 +15,8 @@ public class Program
         Console.WriteLine(" Moteur de Migration Natif et Sécurisé (.NET 10)");
         Console.WriteLine("====================================================");
 
+        // Test CICD
+
         // 1. Récupération sécurisée des connexions (Variables d'env pour la CI/CD)
         string cnxUsers = Environment.GetEnvironmentVariable("DB_USERS_CONNECTION")
             ?? "Host=localhost;Port=5432;Database=users_db;Username=postgres;Password=root;";
