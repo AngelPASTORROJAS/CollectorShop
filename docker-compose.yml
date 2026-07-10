@@ -42,6 +42,9 @@ services:
       - Security__CookieName=CollectorShop_Auth_TK
       - Security__JwtAudience=CollectorShop_SPA
       - Security__JwtSecret=${JWT_SECRET}
+      - DB_USERS_CONNECTION=Host=collectorshop-users-postgres;Port=5432;Database=users_db;Username=${DB_USER};Password=${DB_PASSWORD};
+      - DB_FINANCE_CONNECTION=Host=collectorshop-finance-postgres;Port=5432;Database=finance_db;Username=${DB_USER};Password=${DB_PASSWORD};
+      - DB_COLLECTOR_CONNECTION=Host=collectorshop-collector-postgres;Port=5432;Database=collector_db;Username=${DB_USER};Password=${DB_PASSWORD};
     ports:
       - "5000:5000"
       - "5001:5001"
@@ -73,7 +76,7 @@ services:
     volumes:
       - users_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myuser -d users_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d users_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -94,7 +97,7 @@ services:
     volumes:
       - collector_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myuser -d collector_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d collector_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -115,7 +118,7 @@ services:
     volumes:
       - finance_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myuser -d finance_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d finance_db"]
       interval: 10s
       timeout: 5s
       retries: 5
