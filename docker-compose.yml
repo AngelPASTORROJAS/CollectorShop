@@ -19,9 +19,9 @@ services:
       context: .
       dockerfile: DataBasePostgreSql/Dockerfile
     environment:
-      - DB_USERS_CONNECTION=Host=collectorshop-users-postgres;Port=5432;Database=users_db;Username=myuser;Password=mypassword;
-      - DB_FINANCE_CONNECTION=Host=collectorshop-finance-postgres;Port=5432;Database=finance_db;Username=myuser;Password=mypassword;
-      - DB_COLLECTOR_CONNECTION=Host=collectorshop-collector-postgres;Port=5432;Database=collector_db;Username=myuser;Password=mypassword;
+      - DB_USERS_CONNECTION=Host=collectorshop-users-postgres;Port=5432;Database=users_db;Username=${DB_USER};Password=${DB_PASSWORD};
+      - DB_FINANCE_CONNECTION=Host=collectorshop-finance-postgres;Port=5432;Database=finance_db;Username=${DB_USER};Password=${DB_PASSWORD};
+      - DB_COLLECTOR_CONNECTION=Host=collectorshop-collector-postgres;Port=5432;Database=collector_db;Username=${DB_USER};Password=${DB_PASSWORD};
     depends_on:
       users.database:
         condition: service_healthy
@@ -41,7 +41,7 @@ services:
       - StorageSettings__StorageFolder=/app/user_documents
       - Security__CookieName=CollectorShop_Auth_TK
       - Security__JwtAudience=CollectorShop_SPA
-      - Security__JwtSecret=UneCleSuperSecrèteEtTresLonguePourLeHachageDuJwt123456!
+      - Security__JwtSecret=${JWT_SECRET}
     ports:
       - "5000:5000"
       - "5001:5001"
@@ -65,8 +65,8 @@ services:
     container_name: collectorshop-users-postgres
     restart: always
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: users_db
     ports:
       - "5432:5432"
@@ -86,8 +86,8 @@ services:
     container_name: collectorshop-collector-postgres
     restart: always
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: collector_db
     ports:
       - "5433:5432"
@@ -107,8 +107,8 @@ services:
     container_name: collectorshop-finance-postgres
     restart: always
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: finance_db
     ports:
       - "5434:5432"

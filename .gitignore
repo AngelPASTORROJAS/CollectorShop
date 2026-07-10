@@ -367,3 +367,4 @@ FodyWeavers.xsd
 
 # User documents (uploads)
 **/user_documents/
+.env
