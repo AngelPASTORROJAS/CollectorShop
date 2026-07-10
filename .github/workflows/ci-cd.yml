@@ -90,3 +90,16 @@ jobs:
           tags: |
             ghcr.io/angelpastorrojas/collectorshop/collector-shop-api:latest
             ghcr.io/angelpastorrojas/collectorshop/collector-shop-api:${{ github.event.inputs.front_tag || 'latest' }}
+
+      - name: 🚀 Deploy to VPS via SSH
+        if: false # github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /app/collector-shop
+            docker compose pull
+            docker compose up -d --remove-orphans
+            echo "🚀 Application mise à jour en production !"
