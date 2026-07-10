@@ -46,12 +46,27 @@ jobs:
 
       # 📦 RÉCUPÉRATION DU FRONT-END DEPUIS L'AUTRE REPO
       - name: 📥 Fetch Front-End Release Artifact
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
         run: |
-          ASSET_URL=$(curl -s https://api.github.com/repos/AngelPASTORROJAS/CollectorShopFront/releases/tags/${{ github.event.inputs.front_tag }} | jq -r '.assets[] | select(.name=="dist.tar.gz") | .browser_download_url')
+          # 1. Récupération de l'URL de téléchargement de l'asset dist.tar.gz
+          # S'il s'agit d'un push automatique, on demande par défaut la version 'latest'
+          TAG_TO_FETCH="${{ github.event.inputs.front_tag || 'latest' }}"
+
+          ASSET_URL=$(curl -s https://api.github.com/repos/AngelPASTORROJAS/CollectorShopFront/releases/tags/$TAG_TO_FETCH | jq -r '.assets[] | select(.name=="dist.tar.gz") | .browser_download_url')
+
+          # Si l'URL est vide (par exemple si la release n'existe pas), on tente de récupérer la toute dernière release générale
+          if [ "$ASSET_URL" = "null" ] || [ -z "$ASSET_URL" ]; then
+            echo "⚠️ Tag spécifié non trouvé, récupération de la dernière release en date..."
+            ASSET_URL=$(curl -s https://api.github.com/repos/AngelPASTORROJAS/CollectorShopFront/releases/latest | jq -r '.assets[] | select(.name=="dist.tar.gz") | .browser_download_url')
+          fi
+
+          # 2. Téléchargement
           curl -L -o dist.tar.gz "$ASSET_URL"
+
+          # 3. Extraction directement dans wwwroot/public
           mkdir -p CollectorShopApi/wwwroot/public
           tar -xzf dist.tar.gz -C CollectorShopApi/wwwroot/public --strip-components=1
+
           echo "✅ Front-end injecté avec succès dans wwwroot/public !"
 
       - name: 💾 Cache Docker layers for Compose
