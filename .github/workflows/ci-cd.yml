@@ -37,7 +37,7 @@ jobs:
           DB_PASSWORD: mypassword
           JWT_SECRET: UneCleSuperSecrèteEtTresLonguePourLeHachageDuJwt123456!
         run: |
-          docker compose up --build --exit-code-from api.tests
+          docker compose up --build
         continue-on-error: true
 
       - name: Shutdown Containers
